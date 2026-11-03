@@ -1,0 +1,18 @@
+.app {
+  display: grid;
+  place-content: center;
+  gap: var(--space-3);
+  min-height: 100vh;
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.logo {
+  height: 48px;
+  width: auto;
+  margin-inline: auto;
+}
+
+.tagline {
+  color: var(--color-ink-muted);
+}

@@ -1,0 +1,164 @@
+/* Lastro: design tokens (CSS custom properties). Direção A "Moeda flat + petróleo"
+ * Importado em main.jsx. Os CSS Modules consomem via var(--token).
+ * Tema escuro: <html data-theme="dark">.
+ *
+ * REGRA DE OURO: o dourado (gold-400/500) NÃO é cor de texto sobre fundo claro (1.8:1 a 2.2:1).
+ *   texto "dourado" usa --color-gold-800 (6.9:1) · botão dourado usa texto --color-ink (7.8:1 a 9.7:1).
+ */
+
+:root {
+  /* ---------- Escala dourada (marca) ---------- */
+  --color-gold-50: #fef8e8;
+  --color-gold-100: #fcefcf;   /* fundo de destaque / chip selecionado */
+  --color-gold-300: #f7d27a;
+  --color-gold-400: #f2b93b;   /* face da moeda · fundo do botão primário */
+  --color-gold-500: #e3a21a;   /* aro da moeda · hover do botão primário */
+  --color-gold-600: #c98a10;
+  --color-gold-700: #9a6a0b;   /* borda do botão primário · anel de foco (4.4:1 em paper) */
+  --color-gold-800: #7a5208;   /* TEXTO dourado / links (6.9:1 em branco) */
+  --color-gold-900: #4f3505;
+
+  /* ---------- Neutros quentes ---------- */
+  --color-ink: #1f1a12;          /* texto principal (17.3:1 em branco) */
+  --color-ink-muted: #5e5649;    /* texto secundário (7.2:1) */
+  --color-paper: #fbf7ee;        /* fundo da página */
+  --color-surface: #ffffff;      /* painéis, inputs, tabela */
+  --color-surface-sunken: #f4eedf;
+  --color-line: #e6ddc8;         /* divisória decorativa */
+  --color-border-strong: #8e8676;/* borda de controles (3.6:1) */
+
+  /* ---------- Papéis ---------- */
+  --color-primary: var(--color-gold-400);         /* CTA (Exportar CSV, Tentar novamente) */
+  --color-primary-hover: var(--color-gold-500);
+  --color-primary-border: var(--color-gold-700);
+  --color-on-primary: var(--color-ink);
+  --color-link: var(--color-gold-800);
+  --color-focus: var(--color-gold-700);
+
+  /* Cor secundária "ao redor da moeda": petróleo, usada em DADOS (gráfico, seleção) */
+  --color-secondary: #0b5266;        /* 8.7:1 em branco */
+  --color-secondary-soft: #e3eef1;   /* período selecionado (texto secondary: 7.4:1) */
+
+  /* ---------- Semântica (exclusiva) ---------- */
+  --color-up: #1e7148;      /* alta (6.0:1) */
+  --color-up-soft: #e2f1e8;
+  --color-down: #b3362d;    /* baixa / erro (6.0:1) */
+  --color-down-soft: #f8e4e1;
+  --color-danger: #b3362d;
+  --color-warning-ink: var(--color-gold-800);
+  --color-warning-soft: var(--color-gold-100);
+  --color-info-soft: var(--color-secondary-soft);
+
+  /* ---------- Gráfico ---------- */
+  --chart-line: var(--color-secondary);
+  --chart-area: rgba(11, 82, 102, 0.08);
+  --chart-grid: #ece5d4;
+  --chart-axis-text: var(--color-ink-muted);
+  --chart-marker-today: var(--color-gold-400);         /* "moedinha" no último ponto */
+  --chart-marker-today-stroke: var(--color-gold-700);
+  --chart-min: var(--color-down);
+  --chart-max: var(--color-up);
+
+  /* ---------- Tipografia ---------- */
+  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --text-xs: 0.75rem;   /* 12 */
+  --text-sm: 0.875rem;  /* 14 */
+  --text-base: 1rem;    /* 16 */
+  --text-lg: 1.125rem;  /* 18 */
+  --text-xl: 1.5rem;    /* 24 */
+  --text-2xl: 2rem;     /* 32 */
+  --text-3xl: 2.5rem;   /* 40 */
+  --text-4xl: 3rem;     /* 48 */
+  --leading-tight: 1.15;
+  --leading-normal: 1.5;
+  --tracking-caps: 0.08em;
+
+  /* ---------- Espaço (grid 8, meio passo 4) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* ---------- Forma (amigável, sem exagero) ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* ---------- Elevação ---------- */
+  --shadow-sm: 0 1px 2px rgba(31, 26, 18, 0.06);
+  --shadow-md: 0 6px 20px rgba(31, 26, 18, 0.08);
+  --shadow-lg: 0 16px 40px rgba(31, 26, 18, 0.14);
+
+  /* ---------- Mascote ---------- */
+  --mascot-size-sm: 64px;   /* inline (tabela vazia, toast) — mínimo absoluto 48px */
+  --mascot-size-md: 120px;  /* estados de seção (erro, vazio, offline) */
+  --mascot-size-lg: 180px;  /* splash / boas-vindas */
+
+  /* ---------- Movimento ---------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);  /* só no mascote */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  /* ---------- Layout ---------- */
+  --container-max: 1200px;
+  --header-height: 64px;
+  --tap-target: 44px;
+}
+
+[data-theme="dark"] {
+  --color-ink: #f3eee3;
+  --color-ink-muted: #b3a994;
+  --color-paper: #14110b;
+  --color-surface: #1c1810;
+  --color-surface-sunken: #17140d;
+  --color-line: #2e281c;
+  --color-border-strong: #6f6656;
+
+  --color-primary: var(--color-gold-400);   /* texto ink escuro sobre ele: 9.7:1 */
+  --color-primary-hover: var(--color-gold-300);
+  --color-primary-border: var(--color-gold-400);
+  --color-on-primary: #1f1a12;
+  --color-link: var(--color-gold-300);
+  --color-focus: var(--color-gold-400);
+
+  --color-secondary: #6cc0d4;
+  --color-secondary-soft: #16323d;
+
+  --color-up: #52c68e;
+  --color-up-soft: #12301f;
+  --color-down: #f0857a;
+  --color-down-soft: #351a18;
+  --color-danger: #f0857a;
+  --color-warning-ink: var(--color-gold-300);
+  --color-warning-soft: #2b2416;
+
+  --chart-area: rgba(108, 192, 212, 0.12);
+  --chart-grid: #2a2419;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}

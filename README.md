@@ -1,16 +1,28 @@
-# React + Vite
+# Lastro · Currency Exchange App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA em React para converter moedas, acompanhar o histórico de cotações e exportar os dados em CSV, usando a [API Frankfurter](https://frankfurter.dev/).
 
-Currently, two official plugins are available:
+> 🚧 Em desenvolvimento. Este README será completado ao longo do projeto.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tecnologias
 
-## React Compiler
+- React 19 + JSX
+- Vite
+- CSS Modules
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Como executar
 
-## Expanding the ESLint configuration
+Requisitos: Node.js 20+.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:5173`.
+
+## Documentação
+
+- [Requisitos](docs/REQUIREMENTS.md)
+- [Componentes](docs/COMPONENTS.md)
+- [Figma](docs/FIGMA.md)
