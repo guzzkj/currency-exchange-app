@@ -16,9 +16,11 @@ Usa o **test runner nativo do Node** (`node:test` + `node:assert`), sem nenhuma 
 
 | Arquivos | Testes | Passaram | Falharam |
 |---|---|---|---|
-| 6 | 47 | 47 | 0 |
+| 7 | 55 | 55 | 0 |
 
-Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
+> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`.
+
+Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 testes de `utils/` passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
 
 ## Funções
 
@@ -32,7 +34,7 @@ Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14,
 | | `swapPair(pair)` | Inverte origem e destino | RN04 |
 | `dates.js` | `getPeriodRange(key, today)` | Data inicial e final de cada um dos 8 períodos | RN07 |
 | | `subtractMonths(iso, n)` | Volta meses ajustando o fim do mês | RN07 |
-| | `isWeekend`, `getBusinessDays` | Dias úteis (usado nos dados fictícios) | RN08 |
+| | `isWeekend`, `getBusinessDays` | Dias úteis | RN08 |
 | | `isValidIsoDate(iso)` | Recusa datas mal formadas ou inexistentes | RN10 |
 | `format.js` | `formatRate`, `formatMoney` | 4 casas para cotação, 2 para dinheiro, pt-BR | RN12 |
 | | `formatDate`, `formatShortDate`, `formatWeekday` | Datas em pt-BR sem erro de fuso | RN06 |
@@ -177,6 +179,33 @@ Base de teste: 5 registros EUR/BRL de 19 a 23/10/2026, com cotações 5,40 · 5,
 
 > A cotação no CSV usa **vírgula** decimal. Com separador `;`, o Excel em pt-BR reconhece `5,4321` como número. Com ponto, ele trataria o valor como texto.
 
+### Camada da API — `services/frankfurterApi.js` (cartão 9)
+
+Os testes trocam o `fetch` por um falso, que devolve a resposta escolhida e guarda a URL chamada. Assim eles rodam sem internet e testam também os casos de erro, que são difíceis de provocar na API real.
+
+| Cenário | Esperado | Obtido |
+|---|---|---|
+| `getLatestRate('EUR', 'BRL')` | chama `/v2/rate/EUR/BRL?providers=ECB` e devolve `{ date, base, quote, rate }` | ✅ |
+| `getHistory('EUR', 'BRL', '30D')` com hoje = 03/11/2026 | chama `/v2/rates?from=2026-10-04&to=2026-11-03&base=EUR&quotes=BRL&providers=ECB` | ✅ |
+| API devolve a cotação de antes do início (02/10) | registro removido; a tabela não mostra data fora do período | ✅ |
+| Histórico vazio (`[]`) | devolve `[]` sem erro | ✅ |
+| `getCurrencies()` | nomes em pt-BR (`Real brasileiro`), ordem alfabética, sem moedas extintas (ARS) | ✅ |
+| HTTP 422 `invalid currency: XYZ` | `ApiError` com `status` 422 e a mensagem da API | ✅ |
+| HTTP 503 sem corpo JSON | `ApiError` com "Erro 503 na API." | ✅ |
+| Sem internet (`fetch` rejeita) | `ApiError` com `status` 0 e "Não foi possível conectar à API." | ✅ |
+| Requisição cancelada (`AbortError`) | continua `AbortError`; não vira mensagem de erro (usado no cartão 10) | ✅ |
+
+**Teste contra a API real (03/11/2026)**, com um script rodando as funções no Node:
+
+| Chamada | Resultado |
+|---|---|
+| `getCurrencies()` | 30 moedas ativas no BCE (AUD … ZAR) |
+| `getLatestRate('EUR', 'BRL')` | `{ date: '2026-11-02', rate: 6.099 }`. Em 03/11 o BCE ainda não tinha publicado, então a data efetiva é 02/11 (RN06) |
+| `getHistory('EUR', 'BRL', '7D')` | 5 registros, de 27/10 a 02/11 |
+| `getHistory('EUR', 'BRL', '30D')` | 21 registros, de 05/10 a 02/11 |
+| `getHistory('EUR', 'BRL', '10A')` | 2.558 registros, de 03/11/2016 a 02/11/2026 |
+| `getLatestRate('EUR', 'XYZ')` | `ApiError 422 invalid currency: XYZ` |
+
 ## Bug encontrado pelos testes
 
 `isValidIsoDate('2024-13-01')` **lançava uma exceção** (`RangeError: Invalid time value`) em vez de devolver `false`. O mês 13 gera uma data inválida, e o `toISOString()` falha com ela.
@@ -197,6 +226,6 @@ Correção: checar `Number.isNaN(date.getTime())` antes de comparar. Sem esse te
 | `DataSection` | `getRateStats` |
 | `DataTable` | `sortRecords`, `paginate`, `formatDate`, `formatRate` |
 | `TableFilters` | `formatRate` |
-| `mocks/mockData.js` | `getPeriodRange`, `getBusinessDays` |
+| `services/frankfurterApi.js` | `getPeriodRange`, `addDays` |
 
 Ainda não usadas na tela: `filterRecords`, `validateFilters` (cartão 13), `toCsv` e `getCsvFileName` (cartão 14).

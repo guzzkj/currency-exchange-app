@@ -80,8 +80,9 @@ function CurrencySelect({ id, label, pickerTitle, value, options, onChange, alig
         onClick={() => (open ? closePicker() : openPicker())}
         onKeyDown={handleButtonKeyDown}
       >
-        <span className={styles.code}>{selected.code}</span>
-        <span className={styles.name}>{selected.name}</span>
+        <span className={styles.code}>{value}</span>
+        {/* The name appears when the currency list arrives from the API. */}
+        <span className={styles.name}>{selected?.name}</span>
         <ChevronDown size={16} aria-hidden="true" />
       </button>
 

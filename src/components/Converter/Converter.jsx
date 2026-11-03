@@ -69,7 +69,8 @@ function Converter({ base, quote, currencies, rate, rateDate, onBaseChange, onQu
 
           <div className={styles.divider} />
 
-          <RateInfo base={base} quote={quote} rate={rate} date={rateDate} />
+          {/* Shown once the API answers (loading state in card 10). */}
+          {rate && <RateInfo base={base} quote={quote} rate={rate} date={rateDate} />}
         </div>
       </div>
     </section>

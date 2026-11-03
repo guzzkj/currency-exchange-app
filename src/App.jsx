@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './App.module.css'
 import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
@@ -9,7 +9,7 @@ import Footer from './components/Footer/Footer'
 import { DEFAULT_BASE, DEFAULT_PERIOD, DEFAULT_QUOTE } from './constants/defaults'
 import { PERIODS } from './constants/periods'
 import { selectCurrency, swapPair } from './utils/conversion'
-import { currencies, getMockHistory, getMockRate, LATEST_DATE } from './mocks/mockData'
+import { getCurrencies, getHistory, getLatestRate } from './services/frankfurterApi'
 
 function App() {
   // Lifting state up: the pair and the period live here because the converter,
@@ -18,9 +18,29 @@ function App() {
   const [quote, setQuote] = useState(DEFAULT_QUOTE)
   const [period, setPeriod] = useState(DEFAULT_PERIOD)
 
-  // Derived during render (no extra state). Replaced by API calls in cards 9–11.
-  const latestRate = getMockRate(base, quote)
-  const history = getMockHistory(base, quote, period)
+  // Data from the Frankfurter API (services/frankfurterApi.js).
+  // null = not loaded yet. Loading and error states come in card 10.
+  const [currencies, setCurrencies] = useState([])
+  const [latestRate, setLatestRate] = useState(null)
+  const [history, setHistory] = useState(null)
+
+  // Currency list: once, when the app opens.
+  useEffect(() => {
+    getCurrencies().then(setCurrencies)
+  }, [])
+
+  // Latest rate: again whenever the pair changes.
+  useEffect(() => {
+    getLatestRate(base, quote).then(setLatestRate)
+  }, [base, quote])
+
+  // History: again whenever the pair or the period changes.
+  useEffect(() => {
+    getHistory(base, quote, period).then(setHistory)
+  }, [base, quote, period])
+
+  // A rate from the previous pair (request still on the way) is never used.
+  const rate = latestRate?.base === base && latestRate?.quote === quote ? latestRate : null
 
   function applyPair(pair) {
     setBase(pair.base)
@@ -39,26 +59,30 @@ function App() {
       <a href="#main" className={styles.skipLink}>Pular para o conteúdo</a>
       <Header />
       <main id="main" tabIndex="-1" className={styles.main}>
-        <Hero rateDate={LATEST_DATE} />
+        <Hero rateDate={rate?.date} />
         <Converter
           base={base}
           quote={quote}
           currencies={currencies}
-          rate={latestRate.rate}
-          rateDate={latestRate.date}
+          rate={rate?.rate}
+          rateDate={rate?.date}
           onBaseChange={handleBaseChange}
           onQuoteChange={handleQuoteChange}
           onSwap={handleSwap}
         />
-        <HistorySection
-          base={base}
-          quote={quote}
-          period={period}
-          periods={PERIODS}
-          records={history}
-          onPeriodChange={setPeriod}
-        />
-        <DataSection base={base} quote={quote} records={history} />
+        {history?.length > 0 && (
+          <>
+            <HistorySection
+              base={base}
+              quote={quote}
+              period={period}
+              periods={PERIODS}
+              records={history}
+              onPeriodChange={setPeriod}
+            />
+            <DataSection base={base} quote={quote} records={history} />
+          </>
+        )}
       </main>
       <Footer />
     </div>

@@ -2,7 +2,6 @@ import styles from './Hero.module.css'
 import { formatDate } from '../../utils/format'
 
 function Hero({ rateDate }) {
-  const formattedDate = formatDate(rateDate)
 
   return (
     <section aria-labelledby="hero-title" className={styles.hero}>
@@ -11,7 +10,7 @@ function Hero({ rateDate }) {
         <p className={styles.text}>Converta, veja o histórico e exporte os dados, sem planilha.</p>
         <span className={styles.sourceBadge}>
           <span className={styles.sourceDot} aria-hidden="true" />
-          Fonte: BCE via Frankfurter · cotação de {formattedDate}
+          Fonte: BCE via Frankfurter{rateDate && ` · cotação de ${formatDate(rateDate)}`}
         </span>
       </div>
     </section>

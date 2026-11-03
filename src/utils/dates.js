@@ -60,7 +60,7 @@ export function getPeriodRange(periodKey, today = toIsoDate()) {
   return { start, end: today }
 }
 
-// Business days between two dates, both included (used by the mocks).
+// Business days between two dates, both included.
 export function getBusinessDays(start, end) {
   const days = []
   for (let day = start; day <= end; day = addDays(day, 1)) {
