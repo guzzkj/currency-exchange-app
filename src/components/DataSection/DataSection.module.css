@@ -1,0 +1,40 @@
+.section {
+  padding-bottom: var(--space-9);
+}
+
+.inner {
+  composes: container from '../../styles/shared.module.css';
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  composes: sectionTitle from '../../styles/shared.module.css';
+}
+
+.countRow {
+  display: flex;
+  margin: var(--space-4) 0;
+}
+
+.count {
+  padding: var(--space-1) 10px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+}
+
+@media (max-width: 639px) {
+  .section {
+    padding-bottom: var(--space-6);
+  }
+}

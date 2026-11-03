@@ -1,0 +1,32 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.label {
+  composes: label from '../../styles/shared.module.css';
+}
+
+.input {
+  width: 100%;
+  height: var(--tap-target);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1023px) {
+  .field {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
