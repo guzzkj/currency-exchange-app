@@ -1,0 +1,41 @@
+.section {
+  padding-bottom: var(--space-9);
+}
+
+.inner {
+  composes: container from '../../styles/shared.module.css';
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  composes: sectionTitle from '../../styles/shared.module.css';
+}
+
+.summary {
+  margin-bottom: var(--space-5);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.summary strong {
+  font-weight: 600;
+}
+
+.up {
+  color: var(--color-up);
+}
+
+@media (max-width: 639px) {
+  .section {
+    padding-bottom: var(--space-8);
+  }
+}

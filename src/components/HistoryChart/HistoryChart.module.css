@@ -1,0 +1,44 @@
+.panel {
+  composes: panel from '../../styles/shared.module.css';
+  padding: var(--space-5);
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+}
+
+.grid line {
+  stroke: var(--color-line);
+  stroke-width: 1;
+}
+
+.axis text {
+  font-size: 12px;
+  fill: var(--chart-axis-text);
+}
+
+.area {
+  fill: var(--color-secondary);
+  fill-opacity: 0.08;
+}
+
+.line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.coin {
+  fill: var(--chart-marker-today);
+  stroke: var(--chart-marker-today-stroke);
+  stroke-width: 2;
+}
+
+@media (max-width: 639px) {
+  .panel {
+    padding: var(--space-3);
+  }
+}
