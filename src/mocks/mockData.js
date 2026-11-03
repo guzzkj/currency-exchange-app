@@ -15,44 +15,74 @@ export const currencies = [
   { code: 'USD', name: 'Dólar americano' },
 ]
 
-// GET /v2/rate/EUR/BRL
-export const latestRate = {
-  base: 'EUR',
-  quote: 'BRL',
-  rate: 5.4321,
-  date: '2026-10-23',
+// Latest published date (a Friday, so the weekend rule RN06 shows up).
+export const LATEST_DATE = '2026-10-23'
+
+// How much 1 EUR buys on LATEST_DATE. Any pair is derived from it (cross rate).
+const EUR_RATES = {
+  AUD: 1.642,
+  BRL: 5.4321,
+  CAD: 1.511,
+  CHF: 0.939,
+  CNY: 7.745,
+  EUR: 1,
+  GBP: 0.864,
+  JPY: 164.2,
+  MXN: 20.15,
+  USD: 1.085,
 }
 
-// GET /v2/rates?from=2026-09-24&to=2026-10-23&base=EUR&quotes=BRL
-// Business days only: weekends have no published rate (RN08).
-const historyRates = [
-  ['2026-09-24', 5.318],
-  ['2026-09-25', 5.324],
-  ['2026-09-28', 5.329],
-  ['2026-09-29', 5.3104],
-  ['2026-09-30', 5.326],
-  ['2026-10-01', 5.342],
-  ['2026-10-02', 5.356],
-  ['2026-10-05', 5.349],
-  ['2026-10-06', 5.371],
-  ['2026-10-07', 5.389],
-  ['2026-10-08', 5.401],
-  ['2026-10-09', 5.395],
-  ['2026-10-12', 5.423],
-  ['2026-10-13', 5.45],
-  ['2026-10-14', 5.4931],
-  ['2026-10-15', 5.5207],
-  ['2026-10-16', 5.498],
-  ['2026-10-19', 5.4702],
-  ['2026-10-20', 5.4515],
-  ['2026-10-21', 5.439],
-  ['2026-10-22', 5.426],
-  ['2026-10-23', 5.4321],
-]
+const roundRate = (value) => Math.round(value * 10000) / 10000
 
-export const history = historyRates.map(([date, rate]) => ({
-  date,
-  base: 'EUR',
-  quote: 'BRL',
-  rate,
-}))
+// GET /v2/rate/{base}/{quote}
+export function getMockRate(base, quote) {
+  return {
+    base,
+    quote,
+    rate: roundRate(EUR_RATES[quote] / EUR_RATES[base]),
+    date: LATEST_DATE,
+  }
+}
+
+function getStartDate(endDate, period) {
+  const start = new Date(endDate)
+  if (period.unit === 'day') start.setUTCDate(start.getUTCDate() - period.amount)
+  if (period.unit === 'month') start.setUTCMonth(start.getUTCMonth() - period.amount)
+  if (period.unit === 'year') start.setUTCFullYear(start.getUTCFullYear() - period.amount)
+  return start
+}
+
+// GET /v2/rates?from=...&to=...&base=...&quotes=...
+// Business days only: weekends have no published rate (RN08).
+// The curve is a deterministic mix of waves, so each pair has its own shape
+// and the last point always matches getMockRate().
+export function getMockHistory(base, quote, period) {
+  const endDate = new Date(`${LATEST_DATE}T00:00:00Z`)
+  const seed = [...`${base}${quote}`].reduce((sum, char) => sum + char.charCodeAt(0), 0)
+
+  const dates = []
+  for (let day = getStartDate(endDate, period); day <= endDate; day.setUTCDate(day.getUTCDate() + 1)) {
+    const weekDay = day.getUTCDay()
+    if (weekDay !== 0 && weekDay !== 6) dates.push(day.toISOString().slice(0, 10))
+  }
+
+  // `offset` counts business days back from the latest date, so the same date
+  // gets the same rate in every period.
+  const wave = (offset) =>
+    1 +
+    0.012 * Math.sin((offset + seed) / 4) +
+    0.02 * Math.sin((offset + seed) / 15) +
+    0.05 * Math.sin((offset + seed) / 110) +
+    0.09 * Math.sin((offset + seed) / 520)
+
+  const lastIndex = dates.length - 1
+  const { rate } = getMockRate(base, quote)
+  const scale = rate / wave(0)
+
+  return dates.map((date, i) => ({
+    date,
+    base,
+    quote,
+    rate: roundRate(wave(i - lastIndex) * scale),
+  }))
+}

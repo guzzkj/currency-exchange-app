@@ -13,3 +13,8 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

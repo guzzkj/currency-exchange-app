@@ -1,8 +1,6 @@
 import styles from './AmountInput.module.css'
 
-function AmountInput({ value }) {
-  const formattedValue = value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
-
+function AmountInput({ value, onChange, invalid, errorId }) {
   return (
     <>
       <label htmlFor="amount" className={styles.label}>Valor</label>
@@ -11,7 +9,10 @@ function AmountInput({ value }) {
         className={styles.input}
         inputMode="decimal"
         autoComplete="off"
-        defaultValue={formattedValue}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={invalid}
+        aria-describedby={invalid ? errorId : undefined}
       />
     </>
   )

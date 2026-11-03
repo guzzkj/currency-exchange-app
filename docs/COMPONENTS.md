@@ -42,7 +42,24 @@ Os dados fictícios saíram dos componentes e agora descem do `App` por props:
 | `TableFilters` | `dateBounds`, `rateBounds` (campos gerados com `map`) |
 | `DataTable` | `records`, `pair`, `pageSize` (linhas geradas com `map`) |
 
-O resumo do período (variação, mínima e máxima), os limites dos filtros e a contagem são derivados dos `records` durante a renderização, sem estado. Ainda não há interação: eventos e `useState` entram no cartão 6.
+O resumo do período (variação, mínima e máxima), os limites dos filtros e a contagem são derivados dos `records` durante a renderização, sem estado.
+
+### Situação atual (cartão 6)
+
+A interface responde ao usuário com `useState` e eventos:
+
+| Estado | Dono | Atualizado por | Efeito |
+|---|---|---|---|
+| `base`, `quote` | `App` | `onBaseChange`, `onQuoteChange`, `onSwap` (vindos de `CurrencySelect` e `SwapButton`) | Conversor, histórico e tabela trocam de par juntos |
+| `period` | `App` | `onPeriodChange` (vindo de `PeriodSelector`) | Gráfico, resumo e tabela trocam de período |
+| `amountText` | `Converter` | `onChange` do `AmountInput` | Resultado recalculado; erro inline quando inválido (RN02) |
+| `open`, `query`, `activeIndex` | `CurrencySelect` | clique, digitação e setas ↑ ↓ / Enter / Esc | Popover pesquisável de moedas |
+
+**Lifting state up:** o par e o período sobem para o `App` porque três seções dependem deles. Os filhos não alteram nada direto: chamam o callback recebido por props e o `App` atualiza o estado.
+
+**Regras aplicadas:** RN03 (escolher a mesma moeda do outro lado inverte o par), RN04 (inverter mantém o valor digitado) e RN02 (validação do valor, com "—" no resultado quando inválido).
+
+Os dados continuam fictícios: `getMockRate(base, quote)` calcula a taxa cruzada de qualquer par e `getMockHistory(base, quote, period)` gera os dias úteis do período. A API real entra no cartão 9.
 
 Ficam para depois: `LanguageSelect`, `ThemeToggle`, `OnboardingCard`, `KpiCard`, `OfflineBanner` e `Toast`, que são opcionais (`PLANEJAMENTO.md` §4.1), e `Loading`, `ErrorMessage`, `EmptyState` e `Mascot`, que dependem de estado real (cartões 10 e 15).
 

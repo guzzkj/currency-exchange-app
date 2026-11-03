@@ -4,7 +4,7 @@ import HistoryChart from '../HistoryChart/HistoryChart'
 
 const RATE_FORMAT = { minimumFractionDigits: 4, maximumFractionDigits: 4 }
 
-function HistorySection({ base, quote, period, periods, records }) {
+function HistorySection({ base, quote, period, periods, records, onPeriodChange }) {
   const pair = `${base}/${quote}`
   const selectedPeriod = periods.find((option) => option.key === period)
 
@@ -27,7 +27,7 @@ function HistorySection({ base, quote, period, periods, records }) {
       <div className={styles.inner}>
         <div className={styles.header}>
           <h2 id="history-title" className={styles.title}>Histórico {pair}</h2>
-          <PeriodSelector options={periods} value={period} />
+          <PeriodSelector options={periods} value={period} onChange={onPeriodChange} />
         </div>
 
         <p className={styles.summary} aria-live="polite">
