@@ -4,6 +4,8 @@ SPA em React para **converter moedas**, acompanhar o **histórico de cotações*
 
 Projeto 01 do curso de front-end: o briefing pede uma ferramenta que substitua a rotina de consultar vários sites, converter na mão e copiar valores para planilhas.
 
+**Acesse online:** https://guzzkj.github.io/currency-exchange-app/
+
 ![Lastro no desktop](docs/img/tests/14-desktop-1280.png)
 
 | Celular · conversor | Celular · histórico | Celular · dados | Celular · filtros |
@@ -78,6 +80,10 @@ Acesse `http://localhost:5173`.
 | `npm test` | Testes das funções JavaScript (72 testes) |
 | `npm run lint` | ESLint |
 | `npm run test:scenarios` | Os 15 cenários do briefing num Chrome de verdade (precisa do `preview` rodando na porta 4173, ver [testes finais](docs/FUNCTION_TESTS.md#testes-finais-na-tela-cartão-15)) |
+
+### Publicação (GitHub Pages)
+
+Cada push na `main` roda o workflow `.github/workflows/deploy.yml`: `npm ci`, `npm test`, build com `BASE_PATH=/currency-exchange-app/` e publicação no GitHub Pages. Localmente o `BASE_PATH` não existe, e o app continua na raiz (`/`).
 
 ## Arquitetura
 

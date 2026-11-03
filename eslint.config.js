@@ -27,8 +27,8 @@ export default defineConfig([
     },
   },
   {
-    // Browser check script (scripts/validate-scenarios.mjs) runs in Node.
-    files: ['scripts/**/*.mjs'],
+    // Node-side files: browser check script and the Vite config (reads BASE_PATH).
+    files: ['scripts/**/*.mjs', 'vite.config.js'],
     languageOptions: { globals: globals.node },
   },
 ])
