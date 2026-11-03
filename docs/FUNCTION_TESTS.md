@@ -18,7 +18,7 @@ Usa o **test runner nativo do Node** (`node:test` + `node:assert`), sem nenhuma 
 |---|---|---|---|
 | 9 | 72 | 72 | 0 |
 
-> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`. Cartão 12: +6 testes de `utils/chart.js` e +3 de `utils/format.js`. Cartão 13: +4 testes de `utils/records.js`.
+> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`. Cartão 12: +6 testes de `utils/chart.js` e +3 de `utils/format.js`. Cartão 13: +4 testes de `utils/records.js`. Cartão 14: sem função nova (o botão usa `toCsv` e `getCsvFileName`, já testadas), conferido no navegador.
 
 Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 testes de `utils/` passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
 
@@ -213,6 +213,16 @@ Base de teste: 5 registros EUR/BRL de 19 a 23/10/2026, com cotações 5,40 · 5,
 | Nome com tabela em ordem decrescente | mesmo nome (usa a menor e a maior data) | ✅ |
 | Nome sem registros | `null`, o botão fica desabilitado (RN15) | ✅ |
 
+**No navegador** (cartão 14, Chrome headless via DevTools Protocol, API real, EUR/BRL, arquivo baixado lido do disco):
+
+| Cenário | Resultado |
+|---|---|
+| Exportar com 30D | `cotacoes_EUR-BRL_2026-10-05_2026-11-03.csv`, começa com BOM, cabeçalho + 22 linhas (= tabela) |
+| mín. 5,66 + Cotação ▲ | "10 de 22" → arquivo com 10 linhas, **na mesma ordem da tabela**, nome com o intervalo dos registros filtrados (`2026-10-15_2026-11-03`) |
+| 0 registros (desktop) | `aria-disabled="true"`, tooltip "Não há registros para exportar." no foco/hover (ligado por `aria-describedby`), Esc esconde, clique não baixa nada |
+| Mobile | Barra fixa no fim da seção, "Exportar CSV (22)" em largura total, baixa o mesmo arquivo. Com 0: "Exportar CSV (0)" + texto embaixo |
+| Console | Nenhum erro ou aviso |
+
 > A cotação no CSV usa **vírgula** decimal. Com separador `;`, o Excel em pt-BR reconhece `5,4321` como número. Com ponto, ele trataria o valor como texto.
 
 ### Camada da API — `services/frankfurterApi.js` (cartão 9)
@@ -299,7 +309,8 @@ Correção: checar `Number.isNaN(date.getTime())` antes de comparar. Sem esse te
 | `DataSection` | `getRateStats`, `validateFilters`, `getEffectiveFilters`, `filterRecords`, `sortRecords`, `countActiveFilters`, `toggleSort` |
 | `DataTable` | `paginate`, `formatDate`, `formatRate` |
 | `DataList` | `formatDate`, `formatRate` |
+| `ExportCsvButton` | `toCsv`, `getCsvFileName` |
 | `TableFilters` | `formatCompactRate` |
 | `services/frankfurterApi.js` | `getPeriodRange`, `addDays` |
 
-Ainda não usadas na tela: `toCsv` e `getCsvFileName` (cartão 14).
+Todas as funções de `utils/` já são usadas na tela.

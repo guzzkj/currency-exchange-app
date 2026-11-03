@@ -1,26 +1,61 @@
+.wrap {
+  position: relative;
+}
+
 .button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  height: var(--tap-target);
-  padding: 0 20px;
-  border: 1px solid var(--color-primary-border);
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: var(--text-base);
-  font-weight: 500;
+  composes: buttonPrimary from '../../styles/shared.module.css';
+}
+
+/* Disabled look (design): sunken background, muted text, no hover change. */
+.button[aria-disabled='true'],
+.button[aria-disabled='true']:hover,
+.blockButton[aria-disabled='true'],
+.blockButton[aria-disabled='true']:hover {
+  border-color: var(--color-line);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink-muted);
+  cursor: not-allowed;
+}
+
+.tooltip,
+.tooltipVisible {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  box-shadow: var(--shadow-md);
+  color: var(--color-paper);
+  font-size: 13px;
   white-space: nowrap;
-  transition: background 150ms var(--ease-out);
 }
 
-.button:hover {
-  background: var(--color-primary-hover);
+.tooltip {
+  display: none;
 }
 
-@media (max-width: 639px) {
-  .button {
-    width: 100%;
-  }
+/* Mobile: bar glued to the bottom of the section while it scrolls (design). */
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: var(--space-4);
+  padding: var(--space-3) 0 var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-paper);
+}
+
+.blockButton {
+  composes: buttonPrimary from '../../styles/shared.module.css';
+  width: 100%;
+  height: 48px;
+}
+
+.reason {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-ink-muted);
 }

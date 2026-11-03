@@ -150,7 +150,7 @@ A seção de dados ficou interativa. O estado mora no `DataSection`, e o resto �
 | `sort` | `{ key: 'date' \| 'rate', direction: 'asc' \| 'desc' }`, começa em data decrescente (RN09) | linhas ordenadas (`sortRecords`) |
 | `pageState` | `{ key, page }`, onde a key é o par + o intervalo dos registros | página atual: volta a 1 quando o par ou o período muda |
 
-Lista final: `sortRecords(filterRecords(records, getEffectiveFilters(filters)), sort)`. A tabela, a lista mobile, o contador e, no cartão 14, o CSV usam essa mesma lista.
+Lista final: `sortRecords(filterRecords(records, getEffectiveFilters(filters)), sort)`. A tabela, a lista mobile, o contador e o CSV usam essa mesma lista.
 
 | Comportamento | Como ficou (igual ao design) |
 |---|---|
@@ -165,6 +165,20 @@ Lista final: `sortRecords(filterRecords(records, getEffectiveFilters(filters)), 
 | Bottom sheet (`FilterSheet`) | `<dialog>` nativo com `showModal()`: o navegador prende o foco, fecha no Esc e desenha o fundo escuro. Fecha também no X, no fundo e em "Ver N registros". O foco volta para "Filtros" |
 
 Componentes novos: `DataList` (cards do mobile) e `FilterSheet`. `TableFilters` é usado nos dois lugares (`layout="bar"` ou `"sheet"`, com `idPrefix` para os ids não repetirem). As opções de ordem ficam em `constants/sort.js`.
+
+### Situação atual (cartão 14)
+
+O `ExportCsvButton` recebe a mesma lista `rows` da tabela (filtrada e ordenada) e gera o arquivo no navegador: `toCsv` monta o texto, um `Blob` vira URL temporária, um `<a download>` é clicado e a URL é liberada depois.
+
+| Comportamento | Como ficou (igual ao design) |
+|---|---|
+| Conteúdo | Só os registros filtrados, na ordem da tabela, com cabeçalho `data;origem;destino;cotacao` (RN13) |
+| Nome | `cotacoes_{BASE}-{QUOTE}_{primeira}_{última}.csv`, com o intervalo dos registros filtrados (RN14) |
+| 0 registros (RN15) | `aria-disabled` (não `disabled`, para continuar focável e o motivo ser lido). O clique não faz nada |
+| Desktop | Botão no cabeçalho da seção. Desabilitado: tooltip "Não há registros para exportar." no hover e no foco, ligado por `aria-describedby`. Esc fecha o tooltip (WCAG 1.4.13) |
+| Mobile (< 640px) | Barra fixa (`sticky`) no fim da seção com "Exportar CSV (n)" em largura total. Desabilitado: o motivo aparece em texto embaixo |
+
+O toast "Pronto! {n} registros exportados." do design fica para depois do cartão 15 (é um extra).
 
 ## 1. Árvore de componentes
 
@@ -248,7 +262,7 @@ Estados reutilizados pelas seções: Loading (Skeleton) · ErrorMessage · Empty
 | `TableFilters` | De/Até e cotação mín./máx., combináveis. Valida início ≤ fim e mín ≤ máx. Botão "Limpar filtros" quando há filtro ativo. No mobile vira bottom sheet com a ordenação | `components/TableFilters/…` | `filters`, `onChange`, `onClear`, `dateBounds`, `sort`, `onSortChange` | rascunho do sheet (mobile) | `Filter Field` · tela "Filtros (bottom sheet)" |
 | `ResultCount` | "{n} de {total} registros" com `aria-live="polite"` | `components/ResultCount/…` | `count`, `total`, `activeFilters` | — | Texto de contagem |
 | `DataTable` | Colunas Data · De · Para · Cotação (4 casas, alinhada à direita). Cabeçalho clicável para ordenar, com `aria-sort`. 50 linhas por página no desktop e "Carregar mais" no mobile | `components/DataTable/…` | `records`, `sort`, `onSortChange`, `page`, `onPageChange` | — | `Table Header`, `Table Row`, `Record Card` |
-| `ExportCsvButton` | Gera o CSV no navegador com os registros filtrados e ordenados e cabeçalhos traduzidos. Fica desabilitado com 0 registros. Nome: `lastro_{BASE}-{QUOTE}_{inicio}_{fim}.csv` | `components/ExportCsvButton/…` | `records`, `base`, `quote`, `range`, `onExported` | — | `Button` Primary/Disabled |
+| `ExportCsvButton` | Gera o CSV no navegador com os registros filtrados e ordenados, com cabeçalho. Fica desabilitado com 0 registros. Nome: `cotacoes_{BASE}-{QUOTE}_{inicio}_{fim}.csv` | `components/ExportCsvButton/…` | `records`, `base`, `quote`, `layout` (`inline` \| `block`) | — | `Button` Primary/Disabled |
 
 ### Estados e feedback
 
@@ -278,7 +292,7 @@ Estados reutilizados pelas seções: Loading (Skeleton) · ErrorMessage · Empty
 | `utils/dates.js` | `getPeriodRange` e datas em ISO | `services` |
 | `utils/records.js` | Filtro, validação dos filtros, filtros aplicados, contador, `toggleSort`, ordenação, paginação e resumo | `DataTable`, seções |
 | `utils/format.js` | `formatRate`, `formatMoney`, `formatDate`… em pt-BR | vários |
-| `utils/csv.js` | `toCsv`, `getCsvFileName` | `ExportCsvButton` (cartão 14) |
+| `utils/csv.js` | `toCsv`, `getCsvFileName` | `ExportCsvButton` |
 | `utils/chart.js` | Mínima/máxima, eixo Y (domínio, marcas, casas), datas do eixo X, alinhamento dos rótulos | `HistoryChart` |
 | `constants/` | Os 8 períodos, o par padrão (EUR → BRL) e o tamanho da página | vários |
 

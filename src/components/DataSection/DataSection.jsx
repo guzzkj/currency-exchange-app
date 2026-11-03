@@ -26,7 +26,7 @@ const SKELETON_ROWS = 5
 
 // Same status as the history (both come from the same request).
 // Filters, order and page live here: the table, the mobile list, the counter
-// (and the CSV in card 14) all use the same filtered list.
+// and the CSV all use the same filtered and sorted list.
 function DataSection({ base, quote, records, status }) {
   const isMobile = useMediaQuery('(max-width: 639px)')
   const sheetRef = useRef(null)
@@ -68,7 +68,7 @@ function DataSection({ base, quote, records, status }) {
       <div className={styles.inner}>
         <div className={styles.header}>
           <h2 id="data-title" className={styles.title}>Dados do período</h2>
-          <ExportCsvButton />
+          {!isMobile && <ExportCsvButton records={rows} base={base} quote={quote} />}
         </div>
 
         {status === 'loading' && (
@@ -181,6 +181,8 @@ function DataSection({ base, quote, records, status }) {
             )}
           </>
         )}
+
+        {isMobile && <ExportCsvButton layout="block" records={rows} base={base} quote={quote} />}
       </div>
     </section>
   )
