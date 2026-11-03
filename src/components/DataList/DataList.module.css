@@ -1,0 +1,50 @@
+.list {
+  composes: panel from '../../styles/shared.module.css';
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 64px;
+  padding: 10px var(--space-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.item + .item {
+  border-top: 1px solid var(--color-line);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.date {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.pair {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+.rate {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.more {
+  composes: buttonSecondary from '../../styles/shared.module.css';
+  width: 100%;
+  margin-top: var(--space-4);
+  font-size: 15px;
+}

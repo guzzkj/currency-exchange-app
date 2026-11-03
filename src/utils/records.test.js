@@ -3,10 +3,13 @@ import assert from 'node:assert/strict'
 import {
   DEFAULT_SORT,
   EMPTY_FILTERS,
+  countActiveFilters,
   filterRecords,
+  getEffectiveFilters,
   getRateStats,
   paginate,
   sortRecords,
+  toggleSort,
   validateFilters,
 } from './records.js'
 
@@ -143,4 +146,34 @@ test('getRateStats resume o período', () => {
 
 test('getRateStats sem registros devolve null', () => {
   assert.equal(getRateStats([]), null)
+})
+
+test('getEffectiveFilters ignora o par inválido e mantém o resto', () => {
+  const datesInverted = { from: '2026-10-23', to: '2026-10-19', min: '5', max: '' }
+  assert.deepEqual(getEffectiveFilters(datesInverted), { from: '', to: '', min: '5', max: '' })
+
+  const ratesInverted = { from: '2026-10-19', to: '', min: '5,5', max: '5,4' }
+  assert.deepEqual(getEffectiveFilters(ratesInverted), { from: '2026-10-19', to: '', min: '', max: '' })
+
+  const maxNotNumber = { ...EMPTY_FILTERS, min: '5', max: 'abc' }
+  assert.deepEqual(getEffectiveFilters(maxNotNumber), { ...EMPTY_FILTERS, min: '5' })
+
+  const valid = { from: '2026-10-19', to: '2026-10-23', min: '5', max: '6' }
+  assert.deepEqual(getEffectiveFilters(valid), valid)
+})
+
+test('validateFilters: só a máxima preenchida não gera erro de intervalo', () => {
+  assert.deepEqual(validateFilters({ ...EMPTY_FILTERS, max: '5' }), {})
+  assert.deepEqual(validateFilters({ ...EMPTY_FILTERS, min: '5' }), {})
+})
+
+test('countActiveFilters conta os campos preenchidos', () => {
+  assert.equal(countActiveFilters(EMPTY_FILTERS), 0)
+  assert.equal(countActiveFilters({ ...EMPTY_FILTERS, from: '2026-10-19', max: '6' }), 2)
+})
+
+test('toggleSort: mesma coluna inverte, coluna nova começa decrescente', () => {
+  assert.deepEqual(toggleSort(DEFAULT_SORT, 'date'), { key: 'date', direction: 'asc' })
+  assert.deepEqual(toggleSort({ key: 'date', direction: 'asc' }, 'date'), { key: 'date', direction: 'desc' })
+  assert.deepEqual(toggleSort(DEFAULT_SORT, 'rate'), { key: 'rate', direction: 'desc' })
 })

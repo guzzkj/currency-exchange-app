@@ -4,4 +4,5 @@ export const DEFAULT_QUOTE = 'BRL'
 export const DEFAULT_AMOUNT = 1
 export const DEFAULT_PERIOD = '30D'
 
-export const TABLE_PAGE_SIZE = 10
+// Design: 50 rows per page on desktop, "Carregar mais" adds 50 on mobile.
+export const TABLE_PAGE_SIZE = 50

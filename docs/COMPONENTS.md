@@ -25,7 +25,7 @@ Os dados fictícios saíram dos componentes e agora descem do `App` por props:
 |---|---|
 | `src/mocks/mockData.js` | `currencies`, `latestRate` e `history` (22 dias úteis), no mesmo formato das respostas da API v2 |
 | `src/constants/periods.js` | Os 8 períodos (`key`, `label`, `longLabel`, `unit`, `amount`) |
-| `src/constants/defaults.js` | Par padrão EUR → BRL, valor 1, período 30D e 10 linhas por página |
+| `src/constants/defaults.js` | Par padrão EUR → BRL, valor 1, período 30D e 50 linhas por página (eram 10 até o cartão 13, agora igual ao design) |
 
 | Componente | Props recebidas |
 |---|---|
@@ -39,8 +39,8 @@ Os dados fictícios saíram dos componentes e agora descem do `App` por props:
 | `PeriodSelector` | `options`, `value` (botões gerados com `map`) |
 | `HistoryChart` | `records`, `pair` (pontos, grade e eixos gerados com `map`) |
 | `DataSection` | `base`, `quote`, `records` |
-| `TableFilters` | `dateBounds`, `rateBounds` (campos gerados com `map`) |
-| `DataTable` | `records`, `pair`, `pageSize` (linhas geradas com `map`) |
+| `TableFilters` | `filters`, `errors`, `onChange`, `onClear`, `dateBounds`, `rateBounds`, `layout`, `idPrefix` (campos gerados com `map`; cartão 13) |
+| `DataTable` | `records`, `pair`, `sort`, `onSortChange`, `page`, `onPageChange`, `pageSize` (linhas geradas com `map`; cartão 13) |
 
 O resumo do período (variação, mínima e máxima), os limites dos filtros e a contagem são derivados dos `records` durante a renderização, sem estado.
 
@@ -139,6 +139,32 @@ O SVG feito à mão do `HistoryChart` foi trocado pelo **Recharts** (`AreaChart`
 O gráfico muda quando o par ou o período muda, porque os `records` vêm do `useHistory`. Isso foi conferido no navegador com 30D, 10A e o par invertido.
 
 **Carregamento sob demanda.** O Recharts era a maior parte do JS (641 kB em um arquivo só). O `HistoryChart` agora é carregado com `React.lazy` + `Suspense`, e o skeleton do histórico ocupa o lugar enquanto o arquivo chega. O JS inicial caiu para 261 kB (83 kB gzip), e o gráfico vem num arquivo separado de 380 kB.
+
+### Situação atual (cartão 13)
+
+A seção de dados ficou interativa. O estado mora no `DataSection`, e o resto é derivado a cada render, sem `useEffect`:
+
+| Estado (`useState`) | O que guarda | Derivado dele |
+|---|---|---|
+| `filters` | `{ from, to, min, max }` como texto digitado | erros (`validateFilters`), filtros aplicados (`getEffectiveFilters`), contador de filtros ativos |
+| `sort` | `{ key: 'date' \| 'rate', direction: 'asc' \| 'desc' }`, começa em data decrescente (RN09) | linhas ordenadas (`sortRecords`) |
+| `pageState` | `{ key, page }`, onde a key é o par + o intervalo dos registros | página atual: volta a 1 quando o par ou o período muda |
+
+Lista final: `sortRecords(filterRecords(records, getEffectiveFilters(filters)), sort)`. A tabela, a lista mobile, o contador e, no cartão 14, o CSV usam essa mesma lista.
+
+| Comportamento | Como ficou (igual ao design) |
+|---|---|
+| Filtros combináveis | De/Até e cotação mín./máx. Aceitam vírgula ou ponto, e o resultado aparece enquanto se digita |
+| Filtro inválido | Mensagem em vermelho embaixo do campo, borda vermelha e `aria-invalid`. O par inválido é **ignorado**, e a tabela continua mostrando os dados |
+| Contador | "21 registros no período" ou "2 filtros ativos · 5 de 21 registros", com `aria-live` |
+| Limpar | Link "Limpar filtros" na barra (aparece com algum filtro), botão "Limpar" no sheet e botão na mensagem de sem resultado |
+| Sem resultado | Mensagem + Ouri `empty` + "Limpar filtros". O histórico está ok nesse caso, então continua um Ouri por tela |
+| Ordenação no desktop | Clique no cabeçalho: a mesma coluna inverte a direção e uma coluna nova começa decrescente. Ícones ▼ ▲ ⇅, coluna ativa em `secondary`, `aria-sort` |
+| Paginação no desktop | 50 linhas por página, "Mostrando 51–100 de 2558", "2/52". Volta à página 1 ao filtrar, ordenar ou trocar par/período |
+| Mobile (< 640px) | Botão "Filtros (n)" abre o **bottom sheet** e um `select` escolhe a ordem. A lista em cards (`DataList`) mostra 50 e "Carregar mais" soma 50 |
+| Bottom sheet (`FilterSheet`) | `<dialog>` nativo com `showModal()`: o navegador prende o foco, fecha no Esc e desenha o fundo escuro. Fecha também no X, no fundo e em "Ver N registros". O foco volta para "Filtros" |
+
+Componentes novos: `DataList` (cards do mobile) e `FilterSheet`. `TableFilters` é usado nos dois lugares (`layout="bar"` ou `"sheet"`, com `idPrefix` para os ids não repetirem). As opções de ordem ficam em `constants/sort.js`.
 
 ## 1. Árvore de componentes
 
@@ -250,7 +276,7 @@ Estados reutilizados pelas seções: Loading (Skeleton) · ErrorMessage · Empty
 | `utils/amount.js` | Validação do valor (RN02) | `Converter` |
 | `utils/conversion.js` | `convert`, `invertRate`, `selectCurrency`, `swapPair` | `Converter`, `RateInfo`, `App` |
 | `utils/dates.js` | `getPeriodRange` e datas em ISO | `services` |
-| `utils/records.js` | Filtro, validação dos filtros, ordenação, paginação e resumo | `DataTable`, seções |
+| `utils/records.js` | Filtro, validação dos filtros, filtros aplicados, contador, `toggleSort`, ordenação, paginação e resumo | `DataTable`, seções |
 | `utils/format.js` | `formatRate`, `formatMoney`, `formatDate`… em pt-BR | vários |
 | `utils/csv.js` | `toCsv`, `getCsvFileName` | `ExportCsvButton` (cartão 14) |
 | `utils/chart.js` | Mínima/máxima, eixo Y (domínio, marcas, casas), datas do eixo X, alinhamento dos rótulos | `HistoryChart` |

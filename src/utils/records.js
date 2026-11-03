@@ -7,22 +7,56 @@ export const EMPTY_FILTERS = { from: '', to: '', min: '', max: '' }
 
 export const DEFAULT_SORT = { key: 'date', direction: 'desc' }
 
+// Empty field = no filter (null). Text that isn't a number = NaN.
+function readRate(text) {
+  if (text === '') return null
+  return parseDecimal(text) ?? Number.NaN
+}
+
 // RN10: start ≤ end, min ≤ max, empty fields don't filter.
 // Returns an object with one message per invalid field (empty object = valid).
 export function validateFilters(filters) {
   const errors = {}
-  const min = filters.min === '' ? null : parseDecimal(filters.min)
-  const max = filters.max === '' ? null : parseDecimal(filters.max)
+  const min = readRate(filters.min)
+  const max = readRate(filters.max)
 
   if (filters.from && filters.to && filters.from > filters.to) {
-    errors.to = 'A data final não pode ser anterior à inicial.'
+    errors.to = 'A data final precisa ser igual ou posterior à inicial.'
   }
-  if (filters.min !== '' && min === null) errors.min = 'Digite um número válido.'
-  if (filters.max !== '' && max === null) errors.max = 'Digite um número válido.'
-  if (min !== null && max !== null && min > max) {
-    errors.max = 'A cotação máxima não pode ser menor que a mínima.'
+  if (Number.isNaN(min)) errors.min = 'Digite um número válido.'
+  if (Number.isNaN(max)) errors.max = 'Digite um número válido.'
+  const bothNumbers = typeof min === 'number' && typeof max === 'number' && !Number.isNaN(min + max)
+  if (bothNumbers && min > max) {
+    errors.max = 'A cotação máxima precisa ser igual ou maior que a mínima.'
   }
   return errors
+}
+
+// Filters actually applied: an invalid pair is ignored (like the design), so
+// the table keeps showing data while the message asks for a fix.
+export function getEffectiveFilters(filters) {
+  const errors = validateFilters(filters)
+  const effective = { ...filters }
+  if (errors.to) {
+    effective.from = ''
+    effective.to = ''
+  }
+  if (errors.min) effective.min = ''
+  if (errors.max) {
+    effective.max = ''
+    // Inverted range (max < min): ignore both ends.
+    if (!errors.min && !Number.isNaN(readRate(filters.max))) effective.min = ''
+  }
+  return effective
+}
+
+// How many fields are filled ("2 filtros ativos").
+export const countActiveFilters = (filters) => Object.values(filters).filter((value) => value !== '').length
+
+// Column header click: same column flips the direction, a new one starts descending.
+export function toggleSort(sort, key) {
+  if (sort.key === key) return { key, direction: sort.direction === 'desc' ? 'asc' : 'desc' }
+  return { key, direction: 'desc' }
 }
 
 // Keeps the records inside every filled filter. ISO dates compare as text.

@@ -73,8 +73,13 @@
   color: var(--color-ink-muted);
 }
 
+.sortButton:hover {
+  background: var(--color-line);
+}
+
+/* Active column: secondary color, like the design. */
 .sortActive {
-  color: var(--color-ink);
+  color: var(--color-secondary);
 }
 
 .pagination {
@@ -102,6 +107,10 @@
   background: var(--color-surface);
   font-size: var(--text-sm);
   font-weight: 500;
+}
+
+.pageButton:not([aria-disabled='true']):hover {
+  background: var(--color-surface-sunken);
 }
 
 .pageButton[aria-disabled='true'] {

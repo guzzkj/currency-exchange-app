@@ -16,9 +16,9 @@ Usa o **test runner nativo do Node** (`node:test` + `node:assert`), sem nenhuma 
 
 | Arquivos | Testes | Passaram | Falharam |
 |---|---|---|---|
-| 9 | 68 | 68 | 0 |
+| 9 | 72 | 72 | 0 |
 
-> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`. Cartão 12: +6 testes de `utils/chart.js` e +3 de `utils/format.js`.
+> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`. Cartão 12: +6 testes de `utils/chart.js` e +3 de `utils/format.js`. Cartão 13: +4 testes de `utils/records.js`.
 
 Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 testes de `utils/` passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
 
@@ -42,6 +42,9 @@ Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14,
 | | `formatAxisDate`, `formatLongDate`, `formatCompactRate` | Datas do eixo e do tooltip, rótulos de mín./máx. do gráfico | RN12 |
 | `records.js` | `filterRecords(records, filters)` | Filtra por data e cotação; campo vazio não filtra | RN10 |
 | | `validateFilters(filters)` | Início ≤ fim, mín. ≤ máx., número válido | RN10 |
+| | `getEffectiveFilters(filters)` | Filtros aplicados: o par inválido é ignorado | RN10 |
+| | `countActiveFilters(filters)` | Quantos campos estão preenchidos | — |
+| | `toggleSort(sort, key)` | Clique no cabeçalho: inverte ou começa decrescente | RN09 |
 | | `sortRecords(records, sort)` | Ordena por data ou cotação, sem alterar o original | RN09 |
 | | `paginate(records, page, size)` | Página atual, total de páginas, "Mostrando X–Y" | — |
 | | `getRateStats(records)` | Primeira, última, mín., máx. e variação do período | — |
@@ -171,6 +174,30 @@ Base de teste: 5 registros EUR/BRL de 19 a 23/10/2026, com cotações 5,40 · 5,
 | Lista vazia | `paginate([], 1, 10)` | 0 itens, 1 página, "0–0" | ✅ |
 | Resumo do período | `getRateStats` | mín. 5,38, máx. 5,50, variação +1,85% | ✅ |
 | Resumo sem registros | `getRateStats([])` | `null` | ✅ |
+| Datas invertidas são ignoradas | De 23/10, Até 19/10, mín. 5 | aplica só mín. 5 | ✅ |
+| Cotações invertidas são ignoradas | mín. 5,5, máx. 5,4 | aplica nenhuma das duas | ✅ |
+| Máxima não numérica | mín. 5, máx. `abc` | aplica só mín. 5 | ✅ |
+| Filtros válidos | os 4 preenchidos | aplica todos | ✅ |
+| Só um lado preenchido | só mín. ou só máx. | sem erro de intervalo | ✅ |
+| Contador | vazio / 2 campos | 0 / 2 | ✅ |
+| `toggleSort` | data desc → data; data asc → data; data → cotação | asc; desc; cotação desc | ✅ |
+
+**No navegador** (Chrome headless via DevTools Protocol, API real, EUR/BRL):
+
+| Cenário | Resultado |
+|---|---|
+| Inicial (30D) | "21 registros no período", Data ▼ `descending`, "Mostrando 1–21 de 21" |
+| Clique em Cotação / de novo / em Data | ▼ maior primeiro (6,2523) / ▲ menor primeiro (5,5819) / volta Data ▼ |
+| mín. = 5,65 | "1 filtro ativo · 10 de 21", todas as linhas ≥ 5,65, "Limpar filtros" aparece |
+| + De = 27/10 | "2 filtros ativos · 5 de 21" |
+| Até 01/10 (antes do De) | Erro "A data final precisa ser igual ou posterior à inicial.", `aria-invalid`, datas ignoradas (10 de 21) |
+| máx. 1 (menor que a mín.) | Erro na máxima, cotações ignoradas (21 de 21) |
+| mín. = 99 | Mensagem de sem resultado com Ouri e "Limpar filtros", que volta para 21 |
+| 10A | "Mostrando 1–50 de 2558". Próxima: "51–100", "2/52". Ordenar volta à página 1 |
+| Trocar para 1A na página 2 | Página 1 de novo ("1–50 de 255"), ordem mantida |
+| Mobile: lista | 50 cards, "Carregar mais" → 100, `select` "Cotação (menor)" volta para 50 e ordena |
+| Mobile: sheet | Abre com o foco no X. O filtro muda o contador e "Ver 0 registros"/"Filtros (1)". Radio de ordem sincronizado com o `select`. Esc fecha e devolve o foco para "Filtros" |
+| Console | Nenhum erro ou aviso |
 
 ### CSV (RN13, RN14, RN15)
 
@@ -269,9 +296,10 @@ Correção: checar `Number.isNaN(date.getTime())` antes de comparar. Sem esse te
 | `Hero` | `formatDate` |
 | `HistorySection` | `getRateStats`, `formatChange`, `formatRate` |
 | `HistoryChart` | `getYAxis`, `getXTicks`, `getExtremes`, `getEdgeAnchor`, `formatNumber`, `formatRate`, `formatDate`, `formatAxisDate`, `formatLongDate`, `formatCompactRate` |
-| `DataSection` | `getRateStats` |
-| `DataTable` | `sortRecords`, `paginate`, `formatDate`, `formatRate` |
-| `TableFilters` | `formatRate` |
+| `DataSection` | `getRateStats`, `validateFilters`, `getEffectiveFilters`, `filterRecords`, `sortRecords`, `countActiveFilters`, `toggleSort` |
+| `DataTable` | `paginate`, `formatDate`, `formatRate` |
+| `DataList` | `formatDate`, `formatRate` |
+| `TableFilters` | `formatCompactRate` |
 | `services/frankfurterApi.js` | `getPeriodRange`, `addDays` |
 
-Ainda não usadas na tela: `filterRecords`, `validateFilters` (cartão 13), `toCsv` e `getCsvFileName` (cartão 14).
+Ainda não usadas na tela: `toCsv` e `getCsvFileName` (cartão 14).

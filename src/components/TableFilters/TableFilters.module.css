@@ -5,8 +5,18 @@
   gap: var(--space-4);
 }
 
-.field {
+.sheetGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4) var(--space-3);
+}
+
+.filters .field {
   flex: 1 1 0;
+  min-width: 0;
+}
+
+.sheetGrid .field {
   min-width: 0;
 }
 
@@ -21,12 +31,50 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+  color: var(--color-ink);
   font-size: var(--text-base);
   font-variant-numeric: tabular-nums;
 }
 
+.sheetGrid .input {
+  padding: 0 10px;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-danger);
+}
+
+/* "Limpar filtros": text link aligned with the inputs (below the labels). */
+.clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tap-target);
+  margin-top: 26px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.clear:hover {
+  color: var(--color-ink);
+}
+
 @media (max-width: 1023px) {
-  .field {
+  .filters .field {
     flex: 1 1 calc(50% - 8px);
   }
 }

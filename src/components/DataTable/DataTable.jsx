@@ -1,30 +1,35 @@
+import { useRef } from 'react'
 import styles from './DataTable.module.css'
 import { formatDate, formatRate } from '../../utils/format'
-import { DEFAULT_SORT, paginate, sortRecords } from '../../utils/records'
+import { paginate } from '../../utils/records'
 
-function DataTable({ records, pair, pageSize }) {
-  // Default order: most recent first (RN09). Sorting and paging become interactive in card 13.
-  const { items: rows, page, pageCount, from, to } = paginate(sortRecords(records, DEFAULT_SORT), 1, pageSize)
+const ARIA_SORT = { asc: 'ascending', desc: 'descending' }
+const SORT_ICON = { asc: '▲', desc: '▼' }
+
+// Desktop table. `records` arrive already filtered and sorted (DataSection).
+// Header click sorts by that column (RN09). 50 rows per page.
+function DataTable({ records, pair, sort, onSortChange, page, onPageChange, pageSize }) {
+  const wrapRef = useRef(null)
+  const { items: rows, page: current, pageCount, from, to } = paginate(records, page, pageSize)
+
+  function goToPage(next) {
+    if (next < 1 || next > pageCount) return
+    onPageChange(next)
+    // The table has its own scroll: a new page starts at the top.
+    wrapRef.current.scrollTop = 0
+  }
 
   return (
     <>
-      <div className={styles.wrap}>
+      <div ref={wrapRef} className={styles.wrap}>
         <table className={styles.table}>
           <caption className="visually-hidden">Histórico {pair}</caption>
           <thead>
             <tr>
-              <th scope="col" aria-sort="descending" className={styles.colDate}>
-                <button type="button" className={`${styles.sortButton} ${styles.sortActive}`}>
-                  Data <span aria-hidden="true">↓</span>
-                </button>
-              </th>
+              <SortHeader column="date" label="Data" className={styles.colDate} sort={sort} onSortChange={onSortChange} />
               <th scope="col">De</th>
               <th scope="col">Para</th>
-              <th scope="col" aria-sort="none" className={styles.numeric}>
-                <button type="button" className={styles.sortButton}>
-                  Cotação <span aria-hidden="true">↕</span>
-                </button>
-              </th>
+              <SortHeader column="rate" label="Cotação" className={styles.numeric} sort={sort} onSortChange={onSortChange} />
             </tr>
           </thead>
           <tbody>
@@ -45,12 +50,44 @@ function DataTable({ records, pair, pageSize }) {
           Mostrando {from}–{to} de {records.length}
         </span>
         <div className={styles.pageControls}>
-          <button type="button" className={styles.pageButton} aria-disabled={page <= 1}>‹ Anterior</button>
-          <span className={styles.pageLabel}>{page}/{pageCount}</span>
-          <button type="button" className={styles.pageButton} aria-disabled={page >= pageCount}>Próxima ›</button>
+          <button
+            type="button"
+            className={styles.pageButton}
+            aria-disabled={current <= 1}
+            onClick={() => goToPage(current - 1)}
+          >
+            ‹ Anterior
+          </button>
+          <span className={styles.pageLabel} aria-label={`Página ${current} de ${pageCount}`}>
+            {current}/{pageCount}
+          </span>
+          <button
+            type="button"
+            className={styles.pageButton}
+            aria-disabled={current >= pageCount}
+            onClick={() => goToPage(current + 1)}
+          >
+            Próxima ›
+          </button>
         </div>
       </div>
     </>
+  )
+}
+
+// Sortable column header. aria-sort tells screen readers the current order.
+function SortHeader({ column, label, className, sort, onSortChange }) {
+  const isActive = sort.key === column
+  return (
+    <th scope="col" aria-sort={isActive ? ARIA_SORT[sort.direction] : 'none'} className={className}>
+      <button
+        type="button"
+        className={`${styles.sortButton} ${isActive ? styles.sortActive : ''}`}
+        onClick={() => onSortChange(column)}
+      >
+        {label} <span aria-hidden="true">{isActive ? SORT_ICON[sort.direction] : '⇅'}</span>
+      </button>
+    </th>
   )
 }
 
