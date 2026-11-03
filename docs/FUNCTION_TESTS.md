@@ -16,9 +16,9 @@ Usa o **test runner nativo do Node** (`node:test` + `node:assert`), sem nenhuma 
 
 | Arquivos | Testes | Passaram | Falharam |
 |---|---|---|---|
-| 7 | 55 | 55 | 0 |
+| 8 | 59 | 59 | 0 |
 
-> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`.
+> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`.
 
 Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 testes de `utils/` passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
 
@@ -206,11 +206,24 @@ Os testes trocam o `fetch` por um falso, que devolve a resposta escolhida e guar
 | `getHistory('EUR', 'BRL', '10A')` | 2.558 registros, de 03/11/2016 a 02/11/2026 |
 | `getLatestRate('EUR', 'XYZ')` | `ApiError 422 invalid currency: XYZ` |
 
-## Bug encontrado pelos testes
+### Status das requisições — `getStatus` em `hooks/useApiRequest.js` (cartão 11)
+
+| Cenário | Esperado | Obtido |
+|---|---|---|
+| Ainda sem resultado | `loading` | ✅ |
+| Resultado é do par antigo (`EUR/BRL#0`, par atual `BRL/EUR#0`) | `loading`, e a taxa antiga não é usada | ✅ |
+| Depois de "Tentar de novo" (`#0` → `#1`) | `loading` | ✅ |
+| Resultado da requisição atual | `success` ou `error` | ✅ |
+
+**No navegador** (Chrome headless com `fetch` interceptado): o histórico falha (500), aparece "Tentar de novo", o clique busca **só** `/rates` de novo, e o gráfico com 21 registros aparece. A cotação e as moedas não foram buscadas outra vez.
+
+## Bugs encontrados pelos testes
 
 `isValidIsoDate('2024-13-01')` **lançava uma exceção** (`RangeError: Invalid time value`) em vez de devolver `false`. O mês 13 gera uma data inválida, e o `toISOString()` falha com ela.
 
 Correção: checar `Number.isNaN(date.getTime())` antes de comparar. Sem esse teste, o erro só apareceria quando alguém digitasse uma data impossível no filtro.
+
+**Resposta de requisição cancelada gravada (cartão 11).** No teste do "Tentar de novo", o `fetch` falso respondia na hora, antes do cancelamento. Assim, o erro de uma requisição já cancelada (o StrictMode roda o efeito duas vezes) ainda era gravado. Correção: antes de gravar, o hook confere `controller.signal.aborted` e descarta a resposta.
 
 ## Onde as funções são usadas
 

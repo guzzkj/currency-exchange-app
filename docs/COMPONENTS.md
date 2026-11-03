@@ -99,6 +99,27 @@ Estados por seção (iguais ao `LastroApp.dc.html`):
 
 Os seletores de período e de moeda continuam funcionando durante o carregamento e os erros.
 
+### Situação atual (cartão 11)
+
+Os 3 `useEffect` do `App` faziam a mesma coisa: buscar, guardar o resultado, cancelar e tentar de novo. Essa lógica foi para um **custom hook genérico** e três hooks específicos, em `src/hooks/`:
+
+| Hook | Recebe | Key da requisição | Usado por |
+|---|---|---|---|
+| `useApiRequest(key, request)` | uma key e uma função `request(signal)` que devolve Promise | a key recebida + a tentativa | os 3 hooks abaixo |
+| `useCurrencies()` | — | `currencies` | `App` → `Splash`, `CurrencySelect` |
+| `useLatestRate(base, quote)` | o par | `EUR/BRL` | `App` → `Converter`, `Hero` |
+| `useHistory(base, quote, period)` | o par e o período | `EUR/BRL/30D` | `App` → `HistorySection`, `DataSection` |
+
+Todos devolvem o mesmo formato: `{ status, data, error, retry }`, com `status` igual a `'loading' | 'error' | 'success'`.
+
+Como o `useApiRequest` funciona:
+- **A key decide quando buscar.** O efeito depende só da key. Por isso cada hook monta a key com tudo o que a requisição usa (par, período). Um novo render sem mudança de key não busca nada.
+- **`useEffectEvent` (React 19.2).** A função `request` é recriada a cada render. O Effect Event chama sempre a versão mais nova sem entrar nas dependências, então o efeito não roda à toa e o lint (`react-hooks/exhaustive-deps`) fica sem avisos.
+- **Cancelamento.** O cleanup chama `abort()`, e qualquer resposta de uma requisição cancelada é descartada. Isso vale até quando a resposta já tinha chegado (caso achado no teste com o StrictMode).
+- **`retry`.** Soma uma tentativa só naquele hook. "Tentar de novo" no histórico busca só o histórico, e não a cotação nem as moedas. Conferido no navegador.
+
+O `App` ficou só com o estado da interface (`base`, `quote`, `period`) e a ligação entre as seções.
+
 ## 1. Árvore de componentes
 
 ```
@@ -200,25 +221,27 @@ Estados reutilizados pelas seções: Loading (Skeleton) · ErrorMessage · Empty
 
 | Arquivo | Responsabilidade | Usado por |
 |---|---|---|
-| `services/frankfurterApi.js` | `getCurrencies()`, `getLatestRate(base, quote)`, `getHistory(base, quote, start, end)` com `fetch` e `async/await` | hooks |
-| `hooks/useCurrencies.js` | Lista de moedas + `status` | `App` → `CurrencySelect` |
-| `hooks/useLatestRate.js` | Taxa e data efetiva do par, com `status` e `retry` | `Converter` |
-| `hooks/useHistory.js` | Registros do período, com `status` e `retry` (custom hook obrigatório do briefing) | `App` |
-| `utils/convert.js` | `amount × rate` com arredondamento de exibição | `ConversionResult` |
-| `utils/getPeriodRange.js` | Período → `{ start, end }` | `useHistory`, CSV |
-| `utils/filterRecords.js` · `utils/sortRecords.js` | Filtro e ordenação escritos à mão | `DataSection` |
-| `utils/format.js` | `formatCurrency`, `formatRate`, `formatDate` por locale | vários |
-| `utils/toCsv.js` | Registros → texto CSV com cabeçalhos | `ExportCsvButton` |
-| `constants/` | Os 8 períodos, o par padrão (EUR → BRL) e o padrão do nome do CSV | vários |
+| `services/frankfurterApi.js` | `getCurrencies()`, `getLatestRate(base, quote)`, `getHistory(base, quote, period)` com `fetch` e `async/await`; erros viram `ApiError` | hooks |
+| `hooks/useApiRequest.js` | Busca genérica: status, cancelamento (`AbortController`) e `retry` | hooks abaixo |
+| `hooks/useCurrencies.js` | Lista de moedas | `App` → `Splash`, `CurrencySelect` |
+| `hooks/useLatestRate.js` | Taxa e data efetiva do par | `App` → `Converter`, `Hero` |
+| `hooks/useHistory.js` | Registros do período | `App` → `HistorySection`, `DataSection` |
+| `utils/amount.js` | Validação do valor (RN02) | `Converter` |
+| `utils/conversion.js` | `convert`, `invertRate`, `selectCurrency`, `swapPair` | `Converter`, `RateInfo`, `App` |
+| `utils/dates.js` | `getPeriodRange` e datas em ISO | `services` |
+| `utils/records.js` | Filtro, validação dos filtros, ordenação, paginação e resumo | `DataTable`, seções |
+| `utils/format.js` | `formatRate`, `formatMoney`, `formatDate`… em pt-BR | vários |
+| `utils/csv.js` | `toCsv`, `getCsvFileName` | `ExportCsvButton` (cartão 14) |
+| `constants/` | Os 8 períodos, o par padrão (EUR → BRL) e o tamanho da página | vários |
 
-`status` segue o mesmo formato em todos os hooks: `'idle' | 'loading' | 'success' | 'error'`. As seções escolhem `Loading`, `ErrorMessage` ou `EmptyState` a partir dele.
+Os testes de tudo isso estão em `docs/FUNCTION_TESTS.md`.
 
 ## 5. Fluxo de dados
 
 ```
-useCurrencies ──► App ──► CurrencySelect (options)
-App(base, quote) ──► Converter ──► useLatestRate ──► ConversionResult · RateInfo
-App(base, quote, period) ──► useHistory ──► history
+useCurrencies() ──► App ──► CurrencySelect (options)
+useLatestRate(base, quote) ──► App ──► Converter ──► ConversionResult · RateInfo
+useHistory(base, quote, period) ──► App ──► history
                                               ├─► HistorySection ─► PeriodSummary · HistoryChart
                                               └─► DataSection ─► filter + sort ─► DataTable · ResultCount · ExportCsvButton
 Eventos sobem por callback: onBaseChange · onQuoteChange · onSwap · onPeriodChange · onRetry
