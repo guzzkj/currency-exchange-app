@@ -1,0 +1,32 @@
+.label {
+  composes: label from '../../styles/shared.module.css';
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+}
+
+.value {
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.5em;
+  letter-spacing: 0;
+  color: var(--color-ink-muted);
+}
+
+@media (max-width: 639px) {
+  .value {
+    font-size: var(--text-2xl);
+  }
+}

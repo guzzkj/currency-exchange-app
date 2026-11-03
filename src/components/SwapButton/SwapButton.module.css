@@ -1,0 +1,16 @@
+.button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  margin-bottom: 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  transition: background 150ms var(--ease-out);
+}
+
+.button:hover {
+  background: var(--color-surface-sunken);
+}

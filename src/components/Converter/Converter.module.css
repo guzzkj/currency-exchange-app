@@ -1,0 +1,71 @@
+.section {
+  padding-bottom: var(--space-9);
+}
+
+.inner {
+  composes: container from '../../styles/shared.module.css';
+}
+
+.panel {
+  composes: panel from '../../styles/shared.module.css';
+  padding: var(--space-6);
+}
+
+.title {
+  composes: label from '../../styles/shared.module.css';
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.amount {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.currency {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+
+.result {
+  flex: 1.5 1 300px;
+  min-width: 0;
+  padding-left: var(--space-4);
+}
+
+.divider {
+  height: 1px;
+  margin: var(--space-5) 0 var(--space-4);
+  background: var(--color-line);
+}
+
+@media (max-width: 1023px) {
+  .result {
+    flex-basis: 100%;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .section {
+    padding-bottom: var(--space-8);
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .amount {
+    flex-basis: 100%;
+  }
+
+  .currency {
+    flex: 1 1 0;
+  }
+}

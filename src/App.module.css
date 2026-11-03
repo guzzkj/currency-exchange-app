@@ -62,15 +62,7 @@
   line-height: 1.2;
 }
 
-.panel {
-  padding: var(--space-6);
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
-}
-
-.label,
-.panelLabel {
+.label {
   display: block;
   font-family: var(--font-sans);
   font-size: var(--text-xs);
@@ -83,172 +75,6 @@
 
 .label {
   margin-bottom: var(--space-2);
-}
-
-.panelLabel {
-  margin-bottom: 20px;
-}
-
-/* ---------- Converter ---------- */
-
-.converterRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-4);
-}
-
-.amountField {
-  flex: 1 1 180px;
-  min-width: 0;
-}
-
-.currencyField {
-  flex: 1 1 190px;
-  min-width: 0;
-}
-
-.resultField {
-  flex: 1.5 1 300px;
-  min-width: 0;
-  padding-left: var(--space-4);
-}
-
-.amountInput {
-  width: 100%;
-  height: 56px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  font-size: var(--text-xl);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.currencyButton {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  height: 56px;
-  padding: 0 var(--space-3) 0 var(--space-4);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  text-align: left;
-}
-
-.currencyButton:hover {
-  background: var(--color-paper);
-}
-
-.currencyButton svg {
-  flex: none;
-}
-
-.currencyCode {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: var(--text-base);
-}
-
-.currencyName {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.swapButton {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: var(--tap-target);
-  height: var(--tap-target);
-  margin-bottom: 6px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-  transition: background 150ms var(--ease-out);
-}
-
-.swapButton:hover {
-  background: var(--color-surface-sunken);
-}
-
-.resultBox {
-  display: flex;
-  align-items: center;
-  min-height: 56px;
-}
-
-.resultValue {
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  overflow-wrap: anywhere;
-}
-
-.resultCode {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 0.5em;
-  letter-spacing: 0;
-  color: var(--color-ink-muted);
-}
-
-.divider {
-  height: 1px;
-  margin: var(--space-5) 0 var(--space-4);
-  background: var(--color-line);
-}
-
-.rateRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-}
-
-.rateLine {
-  font-size: 15px;
-  color: var(--color-ink-muted);
-}
-
-.rateBadgeGroup {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.rateBadge {
-  padding: 6px var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--color-secondary-soft);
-  color: var(--color-secondary);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.infoButton {
-  display: grid;
-  place-items: center;
-  width: var(--tap-target);
-  height: var(--tap-target);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-ink-muted);
-}
-
-.infoButton:hover {
-  color: var(--color-ink);
 }
 
 /* ---------- History ---------- */
@@ -534,11 +360,6 @@
 /* ---------- Tablet (< 1024px) ---------- */
 
 @media (max-width: 1023px) {
-  .resultField {
-    flex-basis: 100%;
-    padding-left: 0;
-  }
-
   .filterField {
     flex: 1 1 calc(50% - 8px);
   }
@@ -557,22 +378,6 @@
 
   .dataSection {
     padding-bottom: var(--space-6);
-  }
-
-  .panel {
-    padding: var(--space-4);
-  }
-
-  .amountField {
-    flex-basis: 100%;
-  }
-
-  .currencyField {
-    flex: 1 1 0;
-  }
-
-  .resultValue {
-    font-size: var(--text-2xl);
   }
 
   .chartPanel {

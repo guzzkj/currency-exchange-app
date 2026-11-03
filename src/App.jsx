@@ -1,8 +1,9 @@
-import { ArrowLeftRight, ChevronDown, Download, Info } from 'lucide-react'
+import { Download } from 'lucide-react'
 import styles from './App.module.css'
 import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
 import Footer from './components/Footer/Footer'
+import Converter from './components/Converter/Converter'
 
 function App() {
   return (
@@ -14,70 +15,7 @@ function App() {
       <main id="main" tabIndex="-1" className={styles.main}>
         <Hero />
 
-        {/* Conversor */}
-        <section id="conversor" aria-labelledby="converter-title" className={styles.section}>
-          <div className={styles.container}>
-            <div className={styles.panel}>
-              <h2 id="converter-title" className={styles.panelLabel}>Conversor</h2>
-
-              <div className={styles.converterRow}>
-                <div className={styles.amountField}>
-                  <label htmlFor="amount" className={styles.label}>Valor</label>
-                  <input
-                    id="amount"
-                    className={styles.amountInput}
-                    inputMode="decimal"
-                    autoComplete="off"
-                    defaultValue="1.000"
-                  />
-                </div>
-
-                <div className={styles.currencyField}>
-                  <span id="from-label" className={styles.label}>De</span>
-                  <button type="button" className={styles.currencyButton} aria-haspopup="listbox" aria-labelledby="from-label from-button" id="from-button">
-                    <span className={styles.currencyCode}>EUR</span>
-                    <span className={styles.currencyName}>Euro</span>
-                    <ChevronDown size={16} aria-hidden="true" />
-                  </button>
-                </div>
-
-                <button type="button" className={styles.swapButton} aria-label="Inverter moedas">
-                  <ArrowLeftRight size={20} strokeWidth={1.75} />
-                </button>
-
-                <div className={styles.currencyField}>
-                  <span id="to-label" className={styles.label}>Para</span>
-                  <button type="button" className={styles.currencyButton} aria-haspopup="listbox" aria-labelledby="to-label to-button" id="to-button">
-                    <span className={styles.currencyCode}>BRL</span>
-                    <span className={styles.currencyName}>Real brasileiro</span>
-                    <ChevronDown size={16} aria-hidden="true" />
-                  </button>
-                </div>
-
-                <div className={styles.resultField}>
-                  <span className={styles.label}>Resultado</span>
-                  <div className={styles.resultBox} aria-live="polite">
-                    <output className={styles.resultValue}>
-                      5.432,10 <span className={styles.resultCode}>BRL</span>
-                    </output>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.divider} />
-
-              <div className={styles.rateRow}>
-                <p className={styles.rateLine}>1 EUR = 5,4321 BRL · 1 BRL = 0,1841 EUR</p>
-                <div className={styles.rateBadgeGroup}>
-                  <span className={styles.rateBadge}>Cotação de sex., 23/10/2026 (mais recente)</span>
-                  <button type="button" className={styles.infoButton} aria-label="Sobre a data da cotação">
-                    <Info size={18} strokeWidth={1.75} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <Converter />
 
         {/* Histórico */}
         <section id="historico" aria-labelledby="history-title" className={styles.section}>

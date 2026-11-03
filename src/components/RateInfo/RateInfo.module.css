@@ -1,0 +1,43 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.line {
+  font-size: 15px;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.dateBadge {
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-soft);
+  color: var(--color-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.infoButton {
+  display: grid;
+  place-items: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink-muted);
+}
+
+.infoButton:hover {
+  color: var(--color-ink);
+}
