@@ -1,7 +1,8 @@
 import styles from './Hero.module.css'
+import { formatDate } from '../../utils/format'
 
 function Hero({ rateDate }) {
-  const formattedDate = new Date(`${rateDate}T00:00:00`).toLocaleDateString('pt-BR')
+  const formattedDate = formatDate(rateDate)
 
   return (
     <section aria-labelledby="hero-title" className={styles.hero}>

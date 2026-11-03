@@ -1,6 +1,5 @@
 import styles from './TableFilters.module.css'
-
-const RATE_FORMAT = { minimumFractionDigits: 4, maximumFractionDigits: 4 }
+import { formatRate } from '../../utils/format'
 
 function TableFilters({ dateBounds, rateBounds }) {
   const fields = [
@@ -11,14 +10,14 @@ function TableFilters({ dateBounds, rateBounds }) {
       label: 'Cotação mín.',
       type: 'text',
       inputMode: 'decimal',
-      placeholder: rateBounds.min.toLocaleString('pt-BR', RATE_FORMAT),
+      placeholder: formatRate(rateBounds.min),
     },
     {
       id: 'filter-max',
       label: 'Cotação máx.',
       type: 'text',
       inputMode: 'decimal',
-      placeholder: rateBounds.max.toLocaleString('pt-BR', RATE_FORMAT),
+      placeholder: formatRate(rateBounds.max),
     },
   ]
 

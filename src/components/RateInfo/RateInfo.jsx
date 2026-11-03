@@ -1,15 +1,14 @@
 import { Info } from 'lucide-react'
 import styles from './RateInfo.module.css'
-
-const RATE_FORMAT = { minimumFractionDigits: 4, maximumFractionDigits: 4 }
+import { invertRate } from '../../utils/conversion'
+import { formatDate, formatRate, formatWeekday } from '../../utils/format'
 
 function RateInfo({ base, quote, rate, date }) {
-  const rateDate = new Date(`${date}T00:00:00`)
-  const weekday = rateDate.toLocaleDateString('pt-BR', { weekday: 'short' })
-  const formattedDate = rateDate.toLocaleDateString('pt-BR')
+  const weekday = formatWeekday(date)
+  const formattedDate = formatDate(date)
 
-  const direct = rate.toLocaleString('pt-BR', RATE_FORMAT)
-  const inverse = (1 / rate).toLocaleString('pt-BR', RATE_FORMAT)
+  const direct = formatRate(rate)
+  const inverse = formatRate(invertRate(rate))
 
   return (
     <div className={styles.row}>

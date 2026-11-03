@@ -7,41 +7,16 @@ import SwapButton from '../SwapButton/SwapButton'
 import ConversionResult from '../ConversionResult/ConversionResult'
 import RateInfo from '../RateInfo/RateInfo'
 import { DEFAULT_AMOUNT } from '../../constants/defaults'
-
-const MAX_AMOUNT = 1_000_000_000
-
-// RN02: accepts comma or dot as decimal separator, > 0, up to 2 decimals, up to 1 billion.
-// "1.000" and "1.000,50" are read as thousands (pt-BR). Moves to utils/ in card 8.
-function parseAmount(text) {
-  const trimmed = text.trim()
-  if (trimmed === '') return { value: null, error: 'Digite um valor para converter.' }
-  if (trimmed.startsWith('-')) return { value: null, error: 'Digite um valor maior que zero.' }
-
-  let normalized = trimmed
-  if (trimmed.includes(',')) normalized = trimmed.replace(/\./g, '').replace(',', '.')
-  else if (/^\d{1,3}(\.\d{3})+$/.test(trimmed)) normalized = trimmed.replace(/\./g, '')
-
-  if (!/^\d+(\.\d+)?$/.test(normalized)) {
-    return { value: null, error: 'Use apenas números, com vírgula ou ponto nos centavos.' }
-  }
-
-  const decimals = normalized.split('.')[1] ?? ''
-  if (decimals.length > 2) return { value: null, error: 'Use no máximo 2 casas decimais.' }
-
-  const value = Number(normalized)
-  if (value <= 0) return { value: null, error: 'Digite um valor maior que zero.' }
-  if (value > MAX_AMOUNT) return { value: null, error: 'O valor máximo é 1.000.000.000.' }
-
-  return { value, error: null }
-}
+import { parseAmount } from '../../utils/amount'
+import { convert } from '../../utils/conversion'
 
 function Converter({ base, quote, currencies, rate, rateDate, onBaseChange, onQuoteChange, onSwap }) {
   // Only the converter uses the amount, so the state stays here.
   const [amountText, setAmountText] = useState(String(DEFAULT_AMOUNT))
 
+  // RN02 validation and RN01 math live in utils/ (tested in docs/FUNCTION_TESTS.md).
   const { value: amount, error } = parseAmount(amountText)
-  // RN01: the app does the math, the API only gives the rate.
-  const converted = amount === null ? null : amount * rate
+  const converted = convert(amount, rate)
 
   return (
     <section id="conversor" aria-labelledby="converter-title" className={styles.section}>

@@ -1,11 +1,9 @@
 import styles from './ConversionResult.module.css'
+import { formatMoney } from '../../utils/format'
 
 function ConversionResult({ value, currency }) {
   // Invalid amount → "—" instead of a number.
-  const formattedValue =
-    value === null
-      ? '—'
-      : value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const formattedValue = value === null ? '—' : formatMoney(value)
 
   return (
     <>

@@ -8,6 +8,7 @@ import DataSection from './components/DataSection/DataSection'
 import Footer from './components/Footer/Footer'
 import { DEFAULT_BASE, DEFAULT_PERIOD, DEFAULT_QUOTE } from './constants/defaults'
 import { PERIODS } from './constants/periods'
+import { selectCurrency, swapPair } from './utils/conversion'
 import { currencies, getMockHistory, getMockRate, LATEST_DATE } from './mocks/mockData'
 
 function App() {
@@ -19,26 +20,19 @@ function App() {
 
   // Derived during render (no extra state). Replaced by API calls in cards 9–11.
   const latestRate = getMockRate(base, quote)
-  const selectedPeriod = PERIODS.find((option) => option.key === period)
-  const history = getMockHistory(base, quote, selectedPeriod)
+  const history = getMockHistory(base, quote, period)
 
-  // RN03: origin and destination can't be equal. Picking the other side's
-  // currency swaps the pair instead.
-  function handleBaseChange(code) {
-    if (code === quote) setQuote(base)
-    setBase(code)
+  function applyPair(pair) {
+    setBase(pair.base)
+    setQuote(pair.quote)
   }
 
-  function handleQuoteChange(code) {
-    if (code === base) setBase(quote)
-    setQuote(code)
-  }
+  // RN03: picking the other side's currency swaps the pair (utils/conversion).
+  const handleBaseChange = (code) => applyPair(selectCurrency({ base, quote }, 'base', code))
+  const handleQuoteChange = (code) => applyPair(selectCurrency({ base, quote }, 'quote', code))
 
   // RN04: swapping keeps the typed amount (it lives in Converter).
-  function handleSwap() {
-    setBase(quote)
-    setQuote(base)
-  }
+  const handleSwap = () => applyPair(swapPair({ base, quote }))
 
   return (
     <div className={styles.page}>

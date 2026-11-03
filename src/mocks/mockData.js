@@ -1,3 +1,5 @@
+import { getBusinessDays, getPeriodRange } from '../utils/dates.js'
+
 // Fake data used until the Frankfurter API is integrated (card 9).
 // Shapes follow the API v2 responses so the swap to real data is direct.
 
@@ -44,27 +46,15 @@ export function getMockRate(base, quote) {
   }
 }
 
-function getStartDate(endDate, period) {
-  const start = new Date(endDate)
-  if (period.unit === 'day') start.setUTCDate(start.getUTCDate() - period.amount)
-  if (period.unit === 'month') start.setUTCMonth(start.getUTCMonth() - period.amount)
-  if (period.unit === 'year') start.setUTCFullYear(start.getUTCFullYear() - period.amount)
-  return start
-}
-
 // GET /v2/rates?from=...&to=...&base=...&quotes=...
 // Business days only: weekends have no published rate (RN08).
 // The curve is a deterministic mix of waves, so each pair has its own shape
 // and the last point always matches getMockRate().
-export function getMockHistory(base, quote, period) {
-  const endDate = new Date(`${LATEST_DATE}T00:00:00Z`)
+export function getMockHistory(base, quote, periodKey) {
+  // RN07 with the mock's latest date as "today".
+  const { start, end } = getPeriodRange(periodKey, LATEST_DATE)
+  const dates = getBusinessDays(start, end)
   const seed = [...`${base}${quote}`].reduce((sum, char) => sum + char.charCodeAt(0), 0)
-
-  const dates = []
-  for (let day = getStartDate(endDate, period); day <= endDate; day.setUTCDate(day.getUTCDate() + 1)) {
-    const weekDay = day.getUTCDay()
-    if (weekDay !== 0 && weekDay !== 6) dates.push(day.toISOString().slice(0, 10))
-  }
 
   // `offset` counts business days back from the latest date, so the same date
   // gets the same rate in every period.

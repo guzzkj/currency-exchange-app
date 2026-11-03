@@ -1,26 +1,19 @@
 import styles from './HistorySection.module.css'
 import PeriodSelector from '../PeriodSelector/PeriodSelector'
 import HistoryChart from '../HistoryChart/HistoryChart'
-
-const RATE_FORMAT = { minimumFractionDigits: 4, maximumFractionDigits: 4 }
+import { formatChange, formatRate } from '../../utils/format'
+import { getRateStats } from '../../utils/records'
 
 function HistorySection({ base, quote, period, periods, records, onPeriodChange }) {
   const pair = `${base}/${quote}`
   const selectedPeriod = periods.find((option) => option.key === period)
 
   // Period summary, derived from the records (no extra state).
-  const rates = records.map((record) => record.rate)
-  const first = rates[0]
-  const last = rates[rates.length - 1]
-  const change = ((last - first) / first) * 100
-  const isUp = change >= 0
-
-  const formattedChange = `${isUp ? '+' : '−'}${Math.abs(change).toLocaleString('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}% ${isUp ? '▲' : '▼'}`
-  const min = Math.min(...rates).toLocaleString('pt-BR', RATE_FORMAT)
-  const max = Math.max(...rates).toLocaleString('pt-BR', RATE_FORMAT)
+  const stats = getRateStats(records)
+  const isUp = stats.change >= 0
+  const formattedChange = formatChange(stats.change)
+  const min = formatRate(stats.min)
+  const max = formatRate(stats.max)
 
   return (
     <section id="historico" aria-labelledby="history-title" className={styles.section}>

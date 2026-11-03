@@ -1,4 +1,5 @@
 import styles from './HistoryChart.module.css'
+import { formatNumber, formatRate, formatShortDate } from '../../utils/format'
 
 // SVG chart drawn from the records. The charting library replaces it in card 12.
 const WIDTH = 900
@@ -6,9 +7,6 @@ const HEIGHT = 320
 const PADDING = { top: 16, right: 16, bottom: 32, left: 56 }
 const Y_TICKS = 4
 const X_TICKS = 5
-
-const formatDay = (date) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 
 function HistoryChart({ records, pair }) {
   const rates = records.map((record) => record.rate)
@@ -34,7 +32,7 @@ function HistoryChart({ records, pair }) {
 
   const firstRecord = records[0]
   const lastRecord = records[lastIndex]
-  const description = `Cotação ${pair} de ${formatDay(firstRecord.date)} a ${formatDay(lastRecord.date)}, de ${firstRecord.rate.toLocaleString('pt-BR')} a ${lastRecord.rate.toLocaleString('pt-BR')}`
+  const description = `Cotação ${pair} de ${formatShortDate(firstRecord.date)} a ${formatShortDate(lastRecord.date)}, de ${formatRate(firstRecord.rate)} a ${formatRate(lastRecord.rate)}`
 
   return (
     <div className={styles.panel}>
@@ -47,7 +45,7 @@ function HistoryChart({ records, pair }) {
         <g className={styles.axis}>
           {yTicks.map((tick) => (
             <text key={tick} x={PADDING.left - 10} y={y(tick) + 4} textAnchor="end">
-              {tick.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatNumber(tick, 2)}
             </text>
           ))}
           {xTickIndexes.map((index, i) => (
@@ -57,7 +55,7 @@ function HistoryChart({ records, pair }) {
               y={HEIGHT - 8}
               textAnchor={i === 0 ? 'start' : i === xTickIndexes.length - 1 ? 'end' : 'middle'}
             >
-              {formatDay(records[index].date)}
+              {formatShortDate(records[index].date)}
             </text>
           ))}
         </g>
