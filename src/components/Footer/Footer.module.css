@@ -1,0 +1,28 @@
+.footer {
+  border-top: 1px solid var(--color-line);
+}
+
+.inner {
+  composes: container from '../../styles/shared.module.css';
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding-block: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.links {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.links a {
+  color: var(--color-link);
+}
+
+.links a:hover {
+  color: var(--color-ink);
+}

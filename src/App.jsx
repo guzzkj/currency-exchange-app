@@ -1,38 +1,18 @@
 import { ArrowLeftRight, ChevronDown, Download, Info } from 'lucide-react'
 import styles from './App.module.css'
-import coin from './assets/brand/lastro-coin-icon.svg'
+import Header from './components/Header/Header'
+import Hero from './components/Hero/Hero'
+import Footer from './components/Footer/Footer'
 
 function App() {
   return (
     <div className={styles.page}>
       <a href="#main" className={styles.skipLink}>Pular para o conteúdo</a>
 
-      <header className={styles.header}>
-        <div className={`${styles.container} ${styles.headerInner}`}>
-          <a href="#" className={styles.brand} aria-label="Lastro">
-            <img src={coin} alt="" width="32" height="32" />
-            <span className={styles.brandName}>lastro</span>
-          </a>
-          <nav aria-label="Seções" className={styles.nav}>
-            <a href="#conversor" className={styles.navLink}>Conversor</a>
-            <a href="#historico" className={styles.navLink}>Histórico</a>
-            <a href="#dados" className={styles.navLink}>Dados</a>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main id="main" tabIndex="-1" className={styles.main}>
-        {/* Hero */}
-        <section aria-labelledby="hero-title" className={styles.hero}>
-          <div className={styles.container}>
-            <h1 id="hero-title" className={styles.heroTitle}>Câmbio com contexto.</h1>
-            <p className={styles.heroText}>Converta, veja o histórico e exporte os dados, sem planilha.</p>
-            <span className={styles.sourceBadge}>
-              <span className={styles.sourceDot} aria-hidden="true" />
-              Fonte: BCE via Frankfurter · cotação de 23/10/2026
-            </span>
-          </div>
-        </section>
+        <Hero />
 
         {/* Conversor */}
         <section id="conversor" aria-labelledby="converter-title" className={styles.section}>
@@ -289,15 +269,7 @@ function App() {
         </section>
       </main>
 
-      <footer className={styles.footer}>
-        <div className={`${styles.container} ${styles.footerInner}`}>
-          <p>Dados: Banco Central Europeu via Frankfurter API · atualizados em dias úteis</p>
-          <div className={styles.footerLinks}>
-            <a href="https://github.com/guzzkj/currency-exchange-app" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="#">Sobre o projeto</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
