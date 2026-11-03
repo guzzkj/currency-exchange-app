@@ -2,8 +2,13 @@ import styles from './DataSection.module.css'
 import ExportCsvButton from '../ExportCsvButton/ExportCsvButton'
 import TableFilters from '../TableFilters/TableFilters'
 import DataTable from '../DataTable/DataTable'
+import { TABLE_PAGE_SIZE } from '../../constants/defaults'
 
-function DataSection() {
+function DataSection({ base, quote, records }) {
+  const rates = records.map((record) => record.rate)
+  const dateBounds = { start: records[0].date, end: records[records.length - 1].date }
+  const rateBounds = { min: Math.min(...rates), max: Math.max(...rates) }
+
   return (
     <section id="dados" aria-labelledby="data-title" className={styles.section}>
       <div className={styles.inner}>
@@ -12,13 +17,13 @@ function DataSection() {
           <ExportCsvButton />
         </div>
 
-        <TableFilters />
+        <TableFilters dateBounds={dateBounds} rateBounds={rateBounds} />
 
         <p className={styles.countRow} aria-live="polite">
-          <span className={styles.count}>22 registros no período</span>
+          <span className={styles.count}>{records.length} registros no período</span>
         </p>
 
-        <DataTable />
+        <DataTable records={records} pair={`${base}/${quote}`} pageSize={TABLE_PAGE_SIZE} />
       </div>
     </section>
   )

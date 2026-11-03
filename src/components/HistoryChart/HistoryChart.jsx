@@ -1,41 +1,69 @@
 import styles from './HistoryChart.module.css'
 
-/* Gráfico estático com dados fictícios. A biblioteca de gráficos entra no cartão 12. */
-function HistoryChart() {
+// SVG chart drawn from the records. The charting library replaces it in card 12.
+const WIDTH = 900
+const HEIGHT = 320
+const PADDING = { top: 16, right: 16, bottom: 32, left: 56 }
+const Y_TICKS = 4
+const X_TICKS = 5
+
+const formatDay = (date) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+
+function HistoryChart({ records, pair }) {
+  const rates = records.map((record) => record.rate)
+  const minRate = Math.min(...rates)
+  const maxRate = Math.max(...rates)
+  const margin = (maxRate - minRate) * 0.05 || 0.01
+  const low = minRate - margin
+  const high = maxRate + margin
+
+  const plotWidth = WIDTH - PADDING.left - PADDING.right
+  const plotHeight = HEIGHT - PADDING.top - PADDING.bottom
+  const baseline = PADDING.top + plotHeight
+  const lastIndex = records.length - 1
+
+  const x = (index) => PADDING.left + (lastIndex === 0 ? plotWidth / 2 : (plotWidth * index) / lastIndex)
+  const y = (rate) => PADDING.top + plotHeight * (1 - (rate - low) / (high - low))
+
+  const points = records.map((record, index) => `${x(index).toFixed(1)},${y(record.rate).toFixed(1)}`)
+  const areaPath = `M${x(0)},${baseline} L${points.join(' L')} L${x(lastIndex)},${baseline} Z`
+
+  const yTicks = Array.from({ length: Y_TICKS }, (_, i) => low + ((high - low) * i) / (Y_TICKS - 1))
+  const xTickIndexes = [...new Set(Array.from({ length: X_TICKS }, (_, i) => Math.round((lastIndex * i) / (X_TICKS - 1))))]
+
+  const firstRecord = records[0]
+  const lastRecord = records[lastIndex]
+  const description = `Cotação ${pair} de ${formatDay(firstRecord.date)} a ${formatDay(lastRecord.date)}, de ${firstRecord.rate.toLocaleString('pt-BR')} a ${lastRecord.rate.toLocaleString('pt-BR')}`
+
   return (
     <div className={styles.panel}>
-      <svg
-        className={styles.chart}
-        viewBox="0 0 900 320"
-        role="img"
-        aria-label="Cotação EUR/BRL de 24/09/2026 a 23/10/2026, de 5,3180 a 5,4321"
-      >
+      <svg className={styles.chart} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={description}>
         <g className={styles.grid}>
-          <line x1="56" x2="884" y1="288" y2="288" />
-          <line x1="56" x2="884" y1="197" y2="197" />
-          <line x1="56" x2="884" y1="107" y2="107" />
-          <line x1="56" x2="884" y1="16" y2="16" />
+          {yTicks.map((tick) => (
+            <line key={tick} x1={PADDING.left} x2={WIDTH - PADDING.right} y1={y(tick)} y2={y(tick)} />
+          ))}
         </g>
         <g className={styles.axis}>
-          <text x="46" y="292" textAnchor="end">5,30</text>
-          <text x="46" y="201" textAnchor="end">5,38</text>
-          <text x="46" y="111" textAnchor="end">5,47</text>
-          <text x="46" y="20" textAnchor="end">5,55</text>
-          <text x="56" y="312" textAnchor="start">24/09</text>
-          <text x="253" y="312" textAnchor="middle">01/10</text>
-          <text x="450" y="312" textAnchor="middle">08/10</text>
-          <text x="647" y="312" textAnchor="middle">15/10</text>
-          <text x="884" y="312" textAnchor="end">23/10</text>
+          {yTicks.map((tick) => (
+            <text key={tick} x={PADDING.left - 10} y={y(tick) + 4} textAnchor="end">
+              {tick.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </text>
+          ))}
+          {xTickIndexes.map((index, i) => (
+            <text
+              key={records[index].date}
+              x={x(index)}
+              y={HEIGHT - 8}
+              textAnchor={i === 0 ? 'start' : i === xTickIndexes.length - 1 ? 'end' : 'middle'}
+            >
+              {formatDay(records[index].date)}
+            </text>
+          ))}
         </g>
-        <path
-          className={styles.area}
-          d="M56,288 L56,268 L95,262 L135,256 L174,277 L214,260 L253,242 L293,227 L332,235 L371,211 L411,191 L450,178 L490,185 L529,154 L569,125 L608,78 L647,48 L687,73 L726,103 L766,123 L805,137 L845,151 L884,144 L884,288 Z"
-        />
-        <polyline
-          className={styles.line}
-          points="56,268 95,262 135,256 174,277 214,260 253,242 293,227 332,235 371,211 411,191 450,178 490,185 529,154 569,125 608,78 647,48 687,73 726,103 766,123 805,137 845,151 884,144"
-        />
-        <circle className={styles.coin} cx="884" cy="144" r="4" />
+        <path className={styles.area} d={areaPath} />
+        <polyline className={styles.line} points={points.join(' ')} />
+        <circle className={styles.coin} cx={x(lastIndex)} cy={y(lastRecord.rate)} r="4" />
       </svg>
     </div>
   )

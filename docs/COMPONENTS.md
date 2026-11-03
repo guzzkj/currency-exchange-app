@@ -17,7 +17,32 @@ A interface estática foi dividida em componentes, cada um em `src/components/No
 
 **Simplificação em relação ao mapa inicial:** `RateDateBadge`, `PeriodSummary` e `ResultCount` eram pequenos demais para virar componentes separados. O selo da data ficou dentro de `RateInfo`, o resumo do período dentro de `HistorySection` e a contagem de registros dentro de `DataSection`.
 
-Os dados ainda são fictícios e ficam escritos dentro de cada componente. Só `CurrencySelect` já recebe props (`id`, `label`, `code`, `name`), porque aparece duas vezes. O fluxo de dados por props e as listas com `map` entram no cartão 5.
+### Situação atual (cartão 5)
+
+Os dados fictícios saíram dos componentes e agora descem do `App` por props:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `src/mocks/mockData.js` | `currencies`, `latestRate` e `history` (22 dias úteis), no mesmo formato das respostas da API v2 |
+| `src/constants/periods.js` | Os 8 períodos (`key`, `label`, `longLabel`, `unit`, `amount`) |
+| `src/constants/defaults.js` | Par padrão EUR → BRL, valor 1, período 30D e 10 linhas por página |
+
+| Componente | Props recebidas |
+|---|---|
+| `Hero` | `rateDate` |
+| `Converter` | `base`, `quote`, `currencies`, `rate`, `rateDate` |
+| `AmountInput` | `value` |
+| `CurrencySelect` | `id`, `label`, `currency` (objeto `{ code, name }` achado com `find`) |
+| `ConversionResult` | `value` (calculado como `amount × rate`), `currency` |
+| `RateInfo` | `base`, `quote`, `rate`, `date` |
+| `HistorySection` | `base`, `quote`, `period`, `periods`, `records` |
+| `PeriodSelector` | `options`, `value` (botões gerados com `map`) |
+| `HistoryChart` | `records`, `pair` (pontos, grade e eixos gerados com `map`) |
+| `DataSection` | `base`, `quote`, `records` |
+| `TableFilters` | `dateBounds`, `rateBounds` (campos gerados com `map`) |
+| `DataTable` | `records`, `pair`, `pageSize` (linhas geradas com `map`) |
+
+O resumo do período (variação, mínima e máxima), os limites dos filtros e a contagem são derivados dos `records` durante a renderização, sem estado. Ainda não há interação: eventos e `useState` entram no cartão 6.
 
 Ficam para depois: `LanguageSelect`, `ThemeToggle`, `OnboardingCard`, `KpiCard`, `OfflineBanner` e `Toast`, que são opcionais (`PLANEJAMENTO.md` §4.1), e `Loading`, `ErrorMessage`, `EmptyState` e `Mascot`, que dependem de estado real (cartões 10 e 15).
 

@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import styles from './CurrencySelect.module.css'
 
-function CurrencySelect({ id, label, code, name }) {
+function CurrencySelect({ id, label, currency }) {
   const labelId = `${id}-label`
   const buttonId = `${id}-button`
 
@@ -15,8 +15,8 @@ function CurrencySelect({ id, label, code, name }) {
         aria-haspopup="listbox"
         aria-labelledby={`${labelId} ${buttonId}`}
       >
-        <span className={styles.code}>{code}</span>
-        <span className={styles.name}>{name}</span>
+        <span className={styles.code}>{currency.code}</span>
+        <span className={styles.name}>{currency.name}</span>
         <ChevronDown size={16} aria-hidden="true" />
       </button>
     </>
