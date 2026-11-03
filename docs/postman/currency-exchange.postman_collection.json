@@ -1,0 +1,749 @@
+{
+  "info": {
+    "name": "Currency Exchange App — Frankfurter v2",
+    "description": "Investigação da API Frankfurter v2 para o Lastro (cartão 7). Detalhes em docs/API_TESTS.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Moedas",
+      "item": [
+        {
+          "name": "01 Moedas disponíveis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array de moedas com iso_code e name\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.be.an(\"array\").that.is.not.empty;",
+                  "  pm.expect(body[0]).to.include.keys(\"iso_code\", \"name\", \"start_date\", \"end_date\");",
+                  "});",
+                  "pm.test(\"Contém as 10 moedas do app\", () => {",
+                  "  const codes = pm.response.json().map((c) => c.iso_code);",
+                  "  [\"AUD\",\"BRL\",\"CAD\",\"CHF\",\"CNY\",\"EUR\",\"GBP\",\"JPY\",\"MXN\",\"USD\"].forEach((c) => pm.expect(codes).to.include(c));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/currencies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "currencies"
+              ]
+            },
+            "description": "Lista de moedas. Usada para montar o seletor."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Cotação mais recente",
+      "item": [
+        {
+          "name": "02 Cotação EUR → USD",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Formato { date, base, quote, rate }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.keys(\"date\", \"base\", \"quote\", \"rate\");",
+                  "  pm.expect(body.rate).to.be.a(\"number\").and.above(0);",
+                  "  pm.expect(body.date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+                  "});",
+                  "pm.test(\"Par correto\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.base).to.eql(\"EUR\");",
+                  "  pm.expect(body.quote).to.eql(\"USD\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "USD"
+              ]
+            },
+            "description": "Requisição indicada no briefing."
+          }
+        },
+        {
+          "name": "03 Cotação EUR → BRL (padrão do app)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Formato { date, base, quote, rate }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.keys(\"date\", \"base\", \"quote\", \"rate\");",
+                  "  pm.expect(body.rate).to.be.a(\"number\").and.above(0);",
+                  "  pm.expect(body.date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+                  "});",
+                  "pm.test(\"Data efetiva não cai em fim de semana\", () => {",
+                  "  const day = new Date(pm.response.json().date + \"T00:00:00Z\").getUTCDay();",
+                  "  pm.expect(day).to.be.within(1, 5);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/BRL?providers=ECB",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "BRL"
+              ],
+              "query": [
+                {
+                  "key": "providers",
+                  "value": "ECB"
+                }
+              ]
+            },
+            "description": "Par padrão (RN05) com a fonte escolhida para o app (BCE)."
+          }
+        },
+        {
+          "name": "08 Várias moedas numa chamada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Um item por moeda pedida\", () => {",
+                  "  const quotes = pm.response.json().map((r) => r.quote).sort();",
+                  "  pm.expect(quotes).to.eql([\"BRL\", \"USD\"]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?base=EUR&quotes=USD,BRL",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD,BRL"
+                }
+              ]
+            },
+            "description": "Sem from/to: só a cotação mais recente de cada moeda."
+          }
+        },
+        {
+          "name": "15 Mesma moeda",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"rate = 1\", () => pm.expect(pm.response.json().rate).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/EUR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "EUR"
+              ]
+            },
+            "description": "A API aceita, mas o app não deixa escolher o mesmo par (RN03)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Histórico",
+      "item": [
+        {
+          "name": "04 Histórico maio/2024 (padrão)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array ordenado por data\", () => {",
+                  "  const dates = pm.response.json().map((r) => r.date);",
+                  "  pm.expect(dates).to.eql([...dates].sort());",
+                  "});",
+                  "pm.test(\"Inclui fim de semana (04/05/2024 é sábado)\", () => {",
+                  "  const dates = pm.response.json().map((r) => r.date);",
+                  "  pm.expect(dates).to.include(\"2024-05-04\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-05-01&to=2024-05-31&base=EUR&quotes=USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-05-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-05-31"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                }
+              ]
+            },
+            "description": "Requisição indicada no briefing. Fonte misturada: inclui sábados e domingos."
+          }
+        },
+        {
+          "name": "05 Histórico maio/2024 (BCE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Nenhum sábado ou domingo\", () => {",
+                  "  pm.response.json().forEach((r) => {",
+                  "    const day = new Date(r.date + \"T00:00:00Z\").getUTCDay();",
+                  "    pm.expect(day, r.date).to.be.within(1, 5);",
+                  "  });",
+                  "});",
+                  "pm.test(\"Começa em 30/04 (feriado em 01/05)\", () => pm.expect(pm.response.json()[0].date).to.eql(\"2024-04-30\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-05-01&to=2024-05-31&base=EUR&quotes=USD&providers=ECB",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-05-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-05-31"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                },
+                {
+                  "key": "providers",
+                  "value": "ECB"
+                }
+              ]
+            },
+            "description": "Só dias úteis (RN08). 01/05 é feriado: a série começa no último dia útil antes (30/04)."
+          }
+        },
+        {
+          "name": "06 Data sem cotação (sábado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Formato { date, base, quote, rate }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.keys(\"date\", \"base\", \"quote\", \"rate\");",
+                  "  pm.expect(body.rate).to.be.a(\"number\").and.above(0);",
+                  "  pm.expect(body.date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+                  "});",
+                  "pm.test(\"Data efetiva = sexta 03/05/2024\", () => pm.expect(pm.response.json().date).to.eql(\"2024-05-03\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/USD?date=2024-05-04&providers=ECB",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "USD"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2024-05-04"
+                },
+                {
+                  "key": "providers",
+                  "value": "ECB"
+                }
+              ]
+            },
+            "description": "Pede um sábado e recebe a sexta: a data efetiva é diferente da pedida (RN06)."
+          }
+        },
+        {
+          "name": "07 Feriado de Natal (BCE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Só 23, 24 e 27/12\", () => {",
+                  "  pm.expect(pm.response.json().map((r) => r.date)).to.eql([\"2024-12-23\", \"2024-12-24\", \"2024-12-27\"]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-12-23&to=2024-12-27&base=EUR&quotes=BRL&providers=ECB",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-12-23"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-12-27"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "BRL"
+                },
+                {
+                  "key": "providers",
+                  "value": "ECB"
+                }
+              ]
+            },
+            "description": "25 e 26/12 não têm cotação no BCE."
+          }
+        },
+        {
+          "name": "09 Agrupado por mês",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"12 pontos\", () => pm.expect(pm.response.json()).to.have.lengthOf(12));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-01-01&to=2024-12-31&base=EUR&quotes=USD&group=month",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-12-31"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                },
+                {
+                  "key": "group",
+                  "value": "month"
+                }
+              ]
+            },
+            "description": "Um ponto por mês."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Erros e limites",
+      "item": [
+        {
+          "name": "10 Moeda inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Corpo de erro { status, message }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql(422);",
+                  "  pm.expect(body.message).to.eql(\"invalid currency: XYZ\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/XYZ",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "XYZ"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "11 Data mal formada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Corpo de erro { status, message }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql(422);",
+                  "  pm.expect(body.message).to.eql(\"invalid date\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-13-01&to=2024-05-31&base=EUR&quotes=USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-13-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-05-31"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "12 Intervalo invertido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array vazio (sem erro HTTP)\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2024-05-31&to=2024-05-01&base=EUR&quotes=USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-05-31"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-05-01"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                }
+              ]
+            },
+            "description": "from depois de to: volta 200 com []. O app precisa validar o intervalo."
+          }
+        },
+        {
+          "name": "13 Datas futuras",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Array vazio (sem erro HTTP)\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rates?from=2030-01-01&to=2030-01-05&base=EUR&quotes=USD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rates"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2030-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2030-01-05"
+                },
+                {
+                  "key": "base",
+                  "value": "EUR"
+                },
+                {
+                  "key": "quotes",
+                  "value": "USD"
+                }
+              ]
+            },
+            "description": "Volta 200 com []: tratar como estado vazio."
+          }
+        },
+        {
+          "name": "14 Data futura em /rate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Corpo de erro { status, message }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql(404);",
+                  "  pm.expect(body.message).to.eql(\"not found\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rate/EUR/USD?date=2099-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rate",
+                "EUR",
+                "USD"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2099-01-01"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "16 Rota inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Corpo de erro { status, message }\", () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql(404);",
+                  "  pm.expect(body.message).to.eql(\"not found\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/nope",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "nope"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.frankfurter.dev/v2",
+      "type": "string"
+    }
+  ]
+}
