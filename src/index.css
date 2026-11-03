@@ -6,8 +6,11 @@
   box-sizing: border-box;
 }
 
+/* The header is sticky: anchor jumps (#conversor, #historico, #dados) and the
+ * focus scrolling stop below it instead of hiding the top under it (WCAG 2.4.11). */
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-height) + var(--space-4));
 }
 
 body {

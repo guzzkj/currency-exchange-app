@@ -34,3 +34,18 @@
   background: var(--color-secondary-soft);
   color: var(--color-secondary);
 }
+
+/* Mobile: the 8 options share the width instead of scrolling.
+ * With the scrollbar hidden, "10A" ended up off screen and nothing showed it was there.
+ * At 320px each option is still ~34px wide and 44px tall (WCAG 2.5.8 asks 24px). */
+@media (max-width: 639px) {
+  .group {
+    width: 100%;
+  }
+
+  .option {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+  }
+}

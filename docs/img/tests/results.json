@@ -1,0 +1,628 @@
+{
+  "date": "2026-11-03T16:33:24.503Z",
+  "results": [
+    {
+      "id": 1,
+      "title": "Conversão entre duas moedas",
+      "checks": [
+        {
+          "label": "100 EUR em BRL = 100 × cotação da API",
+          "ok": true,
+          "detail": "614,11 BRL (API: 6.1411)"
+        },
+        {
+          "label": "Linha da cotação com direta e inversa",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Valor com milhar e vírgula (1.234,56)",
+          "ok": true,
+          "detail": "7.581,56 BRL"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/01-conversao.png"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Inversão das moedas",
+      "checks": [
+        {
+          "label": "Par vira BRL → EUR",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Valor digitado mantido (RN04)",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Resultado recalculado com a cotação BRL/EUR",
+          "ok": true,
+          "detail": "16,28 EUR (API: 0.16284)"
+        },
+        {
+          "label": "Histórico acompanha o par",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/02-inversao.png"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Atualização dos dados ao alterar o par",
+      "checks": [
+        {
+          "label": "Busca filtra a lista",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Conversor usa EUR/USD",
+          "ok": true,
+          "detail": "1,12 USD"
+        },
+        {
+          "label": "Título do histórico",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Tabela com a nova moeda",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Escolher a moeda do outro lado inverte o par (RN03)",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/03-troca-de-par.png"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Todos os períodos históricos (os 8)",
+      "checks": [
+        {
+          "label": "7D",
+          "ok": true,
+          "detail": "6 registros · EUR/BRL subiu +3,00% ▲ em 7 dias · mín. 5,9307 · máx. 6,1411"
+        },
+        {
+          "label": "7D sem fim de semana (RN08)",
+          "ok": true,
+          "detail": "2026-10-27 → 2026-11-03"
+        },
+        {
+          "label": "15D",
+          "ok": true,
+          "detail": "12 registros · EUR/BRL subiu +8,44% ▲ em 15 dias · mín. 5,6339 · máx. 6,2523"
+        },
+        {
+          "label": "30D",
+          "ok": true,
+          "detail": "22 registros · EUR/BRL subiu +9,96% ▲ em 30 dias · mín. 5,5819 · máx. 6,2523"
+        },
+        {
+          "label": "3M",
+          "ok": true,
+          "detail": "67 registros · EUR/BRL subiu +5,06% ▲ em 3 meses · mín. 5,5819 · máx. 6,2523"
+        },
+        {
+          "label": "6M",
+          "ok": true,
+          "detail": "132 registros · EUR/BRL subiu +5,69% ▲ em 6 meses · mín. 5,5819 · máx. 6,2523"
+        },
+        {
+          "label": "1A",
+          "ok": true,
+          "detail": "256 registros · EUR/BRL caiu −0,47% ▼ em 1 ano · mín. 5,5819 · máx. 6,5851"
+        },
+        {
+          "label": "5A",
+          "ok": true,
+          "detail": "1281 registros · EUR/BRL caiu −6,48% ▼ em 5 anos · mín. 4,9682 · máx. 6,6875"
+        },
+        {
+          "label": "10A",
+          "ok": true,
+          "detail": "2559 registros · EUR/BRL subiu +71,92% ▲ em 10 anos · mín. 3,2402 · máx. 6,9553"
+        },
+        {
+          "label": "Quanto maior o período, mais registros",
+          "ok": true,
+          "detail": "6 < 12 < 22 < 67 < 132 < 256 < 1281 < 2559"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/04-periodo-10a.png"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Gráfico com dados reais",
+      "checks": [
+        {
+          "label": "Linha desenhada",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Marcas de mínima e máxima",
+          "ok": true,
+          "detail": "mín. 5,58 · máx. 6,25"
+        },
+        {
+          "label": "Descrição para leitor de tela",
+          "ok": true,
+          "detail": "Gráfico da cotação EUR/BRL de 05/10/2026 a 03/11/2026: de 5,5849 a 6,1411, mínima 5,5819 e máxima 6,2523. Use as setas do teclado para ver cada dia."
+        },
+        {
+          "label": "Mínima do gráfico = menor cotação da tabela",
+          "ok": true,
+          "detail": "5.5819"
+        },
+        {
+          "label": "Tooltip no hover",
+          "ok": true,
+          "detail": "Segunda-feira, 19 de outubro de 20265,6633 BRL"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/05-grafico.png"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Tabela com dados reais",
+      "checks": [
+        {
+          "label": "Linhas = registros do período",
+          "ok": true,
+          "detail": "22 linhas"
+        },
+        {
+          "label": "Colunas Data · De · Para · Cotação",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Cotação com 4 casas",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/06-tabela.png"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Filtros individuais e combinados",
+      "checks": [
+        {
+          "label": "Só cotação mín.",
+          "ok": true,
+          "detail": "1 filtro ativo · 11 de 22 registros"
+        },
+        {
+          "label": "Só cotação máx.",
+          "ok": true,
+          "detail": "1 filtro ativo · 12 de 22 registros"
+        },
+        {
+          "label": "Só data inicial",
+          "ok": true,
+          "detail": "1 filtro ativo · 11 de 22 registros"
+        },
+        {
+          "label": "Só data final",
+          "ok": true,
+          "detail": "1 filtro ativo · 12 de 22 registros"
+        },
+        {
+          "label": "Data + cotação combinados",
+          "ok": true,
+          "detail": "2 filtros ativos · 8 de 22 registros"
+        },
+        {
+          "label": "Limpar filtros volta ao total",
+          "ok": true,
+          "detail": "22 registros no período"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/07-filtros.png"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Ordenação",
+      "checks": [
+        {
+          "label": "Padrão: data mais recente primeiro (RN09)",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Cotação maior primeiro",
+          "ok": true,
+          "detail": "Cotação ▼"
+        },
+        {
+          "label": "Cotação menor primeiro",
+          "ok": true,
+          "detail": "Cotação ▲"
+        },
+        {
+          "label": "Data mais antiga primeiro",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/08-ordenacao.png"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Exportação CSV",
+      "checks": [
+        {
+          "label": "Arquivo gerado no navegador",
+          "ok": true,
+          "detail": "cotacoes_EUR-BRL_2026-10-15_2026-11-03.csv"
+        },
+        {
+          "label": "BOM UTF-8 + cabeçalho",
+          "ok": true,
+          "detail": "data;origem;destino;cotacao"
+        },
+        {
+          "label": "Exatamente os registros filtrados, na ordem da tabela",
+          "ok": true,
+          "detail": "11 linhas · 1 filtro ativo · 11 de 22 registros"
+        },
+        {
+          "label": "Nome com par e intervalo (RN14)",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "0 registros: botão desabilitado com motivo (RN15)",
+          "ok": true,
+          "detail": "Não há registros para exportar."
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/09-csv-desabilitado.png"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Entradas inválidas",
+      "checks": [
+        {
+          "label": "Valor vazio (\"\")",
+          "ok": true,
+          "detail": "Digite um valor para converter. · resultado — BRL"
+        },
+        {
+          "label": "Valor zero (\"0\")",
+          "ok": true,
+          "detail": "Digite um valor maior que zero. · resultado — BRL"
+        },
+        {
+          "label": "Valor negativo (\"-5\")",
+          "ok": true,
+          "detail": "Digite um valor maior que zero. · resultado — BRL"
+        },
+        {
+          "label": "Valor texto (\"abc\")",
+          "ok": true,
+          "detail": "Use apenas números, com vírgula ou ponto nos centavos. · resultado — BRL"
+        },
+        {
+          "label": "Valor duas vírgulas (\"1,2,3\")",
+          "ok": true,
+          "detail": "Use apenas números, com vírgula ou ponto nos centavos. · resultado — BRL"
+        },
+        {
+          "label": "Data final antes da inicial",
+          "ok": true,
+          "detail": "A data final precisa ser igual ou posterior à inicial."
+        },
+        {
+          "label": "Cotação máx. menor que a mín.",
+          "ok": true,
+          "detail": "A cotação máxima precisa ser igual ou maior que a mínima."
+        },
+        {
+          "label": "Filtro inválido é ignorado (tabela continua com dados)",
+          "ok": true,
+          "detail": "2 filtros ativos · 22 de 22 registros"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/10-valor-invalido.png",
+        "docs/img/tests/10-filtro-invalido.png"
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Ausência de dados",
+      "checks": [
+        {
+          "label": "Filtros sem resultado: mensagem + Ouri + Limpar",
+          "ok": true,
+          "detail": "Nenhum registro com esses filtros. Ajuste o intervalo ou limpe os filtros."
+        },
+        {
+          "label": "Período sem cotações (API devolve lista vazia)",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Exportar desabilitado sem dados",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Um Ouri por tela",
+          "ok": true,
+          "detail": "1 Ouri"
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/11-sem-resultado-filtro.png",
+        "docs/img/tests/11-periodo-vazio.png"
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Falha na API",
+      "checks": [
+        {
+          "label": "Lista de moedas falha → tela de erro com \"Tentar de novo\"",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Tentar de novo recupera o app",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Cotação atual falha → alerta no conversor",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Histórico continua funcionando",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Tentar de novo no conversor",
+          "ok": true,
+          "detail": "0,16 EUR"
+        },
+        {
+          "label": "Histórico falha → erro com Ouri + \"Tentar de novo\"",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Tabela mostra erro sem segundo Ouri",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Tentar de novo no histórico",
+          "ok": true,
+          "detail": "12 registros no período"
+        },
+        {
+          "label": "Erro 4xx tratado igual",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/12-falha-moedas.png",
+        "docs/img/tests/12-falha-cotacao.png",
+        "docs/img/tests/12-falha-historico.png"
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Estados de loading",
+      "checks": [
+        {
+          "label": "Splash \"Buscando cotações…\" enquanto a lista de moedas carrega",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Resultado em skeleton",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Histórico e tabela com aria-busy + skeleton",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Exportar desabilitado durante o loading",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Dados aparecem quando a API responde",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/13-loading-splash.png",
+        "docs/img/tests/13-loading-skeletons.png"
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Responsividade em desktop e celular",
+      "checks": [
+        {
+          "label": "1280px sem rolagem horizontal",
+          "ok": true,
+          "detail": "-15px"
+        },
+        {
+          "label": "1280px os 8 períodos visíveis",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "1280px alvos de toque ≥ 24px",
+          "ok": true,
+          "detail": "menor: 40px"
+        },
+        {
+          "label": "1280px tabela",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "Menu \"Conversor\" não esconde a seção sob o header",
+          "ok": true,
+          "detail": "16px abaixo do header"
+        },
+        {
+          "label": "Menu \"Histórico\" não esconde a seção sob o header",
+          "ok": true,
+          "detail": "16px abaixo do header"
+        },
+        {
+          "label": "Menu \"Dados\" não esconde a seção sob o header",
+          "ok": true,
+          "detail": "16px abaixo do header"
+        },
+        {
+          "label": "1024px sem rolagem horizontal",
+          "ok": true,
+          "detail": "-15px"
+        },
+        {
+          "label": "1024px os 8 períodos visíveis",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "1024px alvos de toque ≥ 24px",
+          "ok": true,
+          "detail": "menor: 40px"
+        },
+        {
+          "label": "1024px tabela",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "768px sem rolagem horizontal",
+          "ok": true,
+          "detail": "-15px"
+        },
+        {
+          "label": "768px os 8 períodos visíveis",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "768px alvos de toque ≥ 24px",
+          "ok": true,
+          "detail": "menor: 40px"
+        },
+        {
+          "label": "768px tabela",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "390px sem rolagem horizontal",
+          "ok": true,
+          "detail": "0px"
+        },
+        {
+          "label": "390px os 8 períodos visíveis",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "390px alvos de toque ≥ 24px",
+          "ok": true,
+          "detail": "menor: 44px"
+        },
+        {
+          "label": "390px lista em cards",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "390px bottom sheet abre com foco no X",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "320px sem rolagem horizontal",
+          "ok": true,
+          "detail": "0px"
+        },
+        {
+          "label": "320px os 8 períodos visíveis",
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "label": "320px alvos de toque ≥ 24px",
+          "ok": true,
+          "detail": "menor: 44px"
+        },
+        {
+          "label": "320px lista em cards",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": [
+        "docs/img/tests/14-desktop-1280.png",
+        "docs/img/tests/14-mobile-390-conversor.png",
+        "docs/img/tests/14-mobile-390-historico.png",
+        "docs/img/tests/14-mobile-390-dados.png",
+        "docs/img/tests/14-mobile-390-filtros.png",
+        "docs/img/tests/14-mobile-320.png"
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Console sem erros",
+      "checks": [
+        {
+          "label": "Nenhum erro ou aviso no console durante os cenários",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "evidence": []
+    }
+  ]
+}

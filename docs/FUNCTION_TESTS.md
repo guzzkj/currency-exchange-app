@@ -2,7 +2,7 @@
 
 Cartão 8: as regras de negócio saíram dos componentes e foram para funções puras em `src/utils/`. Puras quer dizer que recebem dados, devolvem dados e não mexem em estado, DOM ou API. Assim dá para testar cada regra sozinha, sem abrir o navegador.
 
-> Este documento será completado no cartão 15 com os testes de tela (API real, loading, erro, responsividade).
+> Os testes de tela (API real, loading, erro, responsividade) estão em [Testes finais na tela](#testes-finais-na-tela-cartão-15).
 
 ## Como rodar
 
@@ -286,6 +286,49 @@ Os testes trocam o `fetch` por um falso, que devolve a resposta escolhida e guar
 | Teclado (foco + seta →) | Tooltip do primeiro dia (04/11/2016) |
 | Inverter o par | Gráfico redesenhado como BRL/EUR (0,1438 a 0,3086) |
 | Console | Nenhum erro ou aviso |
+
+## Testes finais na tela (cartão 15)
+
+Os 15 testes mínimos da seção 9 do briefing rodam num **Chrome de verdade**, com a **API real**, pelo roteiro `scripts/validate-scenarios.mjs`. Ele controla o Chrome pelo DevTools Protocol (sem dependência nova). Falha, demora e período vazio da API são **simulados** interceptando só aquelas requisições.
+
+```bash
+npm run build
+npm run preview -- --port 4173 --strictPort   # em outro terminal
+npm run test:scenarios
+```
+
+Cada verificação aparece como ✅ ou ❌ no terminal, e o comando sai com erro se alguma falhar. Os prints vão para `docs/img/tests/` e o resultado completo para `docs/img/tests/results.json`.
+
+### Resultado (03/11/2026, EUR/BRL)
+
+**96/96 verificações ok.**
+
+| # | Cenário | Passos | Esperado | Obtido | Evidência |
+|---|---|---|---|---|---|
+| 1 | Conversão entre duas moedas | Digitar 100 e depois 1.234,56 com EUR → BRL | Resultado = valor × cotação da API, linha com cotação direta e inversa | ✅ 3/3 | [01-conversao](img/tests/01-conversao.png) |
+| 2 | Inversão das moedas | Clicar em Inverter moedas | Par BRL → EUR, valor 100 mantido (RN04), resultado com a cotação BRL/EUR, histórico acompanha | ✅ 4/4 | [02-inversao](img/tests/02-inversao.png) |
+| 3 | Atualização dos dados ao alterar o par | Abrir "Para", buscar USD, escolher. Depois escolher USD em "De" | Conversor, título do histórico e tabela passam a EUR/USD. Escolher a moeda do outro lado inverte o par (RN03) | ✅ 5/5 | [03-troca-de-par](img/tests/03-troca-de-par.png) |
+| 4 | Todos os períodos históricos (os 8) | Clicar em cada período, de 7D a 10A | Cada período traz registros, 7D sem fim de semana (RN08), mais período = mais registros | ✅ 10/10 | [04-periodo-10a](img/tests/04-periodo-10a.png) |
+| 5 | Gráfico com dados reais | Abrir 30D, passar o mouse no gráfico | Linha desenhada, marcas mín./máx. iguais à tabela, descrição para leitor de tela, tooltip | ✅ 5/5 | [05-grafico](img/tests/05-grafico.png) |
+| 6 | Tabela com dados reais | Abrir 30D | Uma linha por registro, colunas Data · De · Para · Cotação, cotação com 4 casas | ✅ 3/3 | [06-tabela](img/tests/06-tabela.png) |
+| 7 | Filtros individuais e combinados | Usar cada filtro sozinho, depois data + cotação, depois Limpar | Todas as linhas respeitam os filtros, contador atualiza, Limpar volta ao total | ✅ 6/6 | [07-filtros](img/tests/07-filtros.png) |
+| 8 | Ordenação | Clicar nos cabeçalhos Cotação e Data | Padrão data mais recente (RN09), cotação ▼/▲, data ▲ | ✅ 4/4 | [08-ordenacao](img/tests/08-ordenacao.png) |
+| 9 | Exportação CSV | Filtrar por cotação mín., exportar. Depois filtrar sem resultado | Arquivo com BOM, cabeçalho e exatamente as linhas da tabela, na mesma ordem. Nome `cotacoes_EUR-BRL_{início}_{fim}.csv`. Com 0: botão desabilitado + motivo (RN15) | ✅ 5/5 | [09-csv-desabilitado](img/tests/09-csv-desabilitado.png) |
+| 10 | Entradas inválidas | Valor vazio, 0, -5, abc, 1,2,3. Filtros invertidos | Mensagem, `aria-invalid`, resultado "—". Filtro inválido mostra erro e é ignorado | ✅ 8/8 | [10-valor-invalido](img/tests/10-valor-invalido.png) · [10-filtro-invalido](img/tests/10-filtro-invalido.png) |
+| 11 | Ausência de dados | Filtro sem resultado. Período com lista vazia da API (simulado) | Mensagem + Ouri + Limpar. "Não há cotações publicadas neste período.", exportar desabilitado, um Ouri por tela | ✅ 4/4 | [11-sem-resultado-filtro](img/tests/11-sem-resultado-filtro.png) · [11-periodo-vazio](img/tests/11-periodo-vazio.png) |
+| 12 | Falha na API | Simular 500 em /currencies, /rate e /rates, e 422 em /rates | Tela de erro ou alerta por parte, com "Tentar de novo" que recupera. O resto do app continua funcionando | ✅ 9/9 | [12-falha-moedas](img/tests/12-falha-moedas.png) · [12-falha-cotacao](img/tests/12-falha-cotacao.png) · [12-falha-historico](img/tests/12-falha-historico.png) |
+| 13 | Estados de loading | Segurar as respostas da API (simulado) | Splash "Buscando cotações…", depois skeletons e `aria-busy` no resultado, histórico e tabela. Exportar desabilitado | ✅ 5/5 | [13-loading-splash](img/tests/13-loading-splash.png) · [13-loading-skeletons](img/tests/13-loading-skeletons.png) |
+| 14 | Responsividade em desktop e celular | Abrir em 1280, 1024, 768, 390 e 320px. Clicar nos links do menu | Sem rolagem horizontal, os 8 períodos visíveis, alvos ≥ 24px, tabela no desktop e cards no mobile, sheet com foco no X, menu não esconde a seção | ✅ 24/24 | [14-desktop-1280](img/tests/14-desktop-1280.png) · [14-mobile-390-conversor](img/tests/14-mobile-390-conversor.png) · [14-mobile-390-historico](img/tests/14-mobile-390-historico.png) · [14-mobile-390-dados](img/tests/14-mobile-390-dados.png) · [14-mobile-390-filtros](img/tests/14-mobile-390-filtros.png) · [14-mobile-320](img/tests/14-mobile-320.png) |
+| 15 | Console sem erros | Todos os cenários acima | Nenhum erro ou aviso no console | ✅ 1/1 | — |
+| — | Instalação a partir do README | `npm install` + `npm run dev` seguindo só o README | App abre | Cartão 16 | — |
+
+Números reais desta rodada: 100 EUR = 614,11 BRL (cotação 6,1411). Períodos: 7D 6 · 15D 12 · 30D 22 · 3M 67 · 6M 132 · 1A 256 · 5A 1281 · 10A 2559 registros. CSV filtrado: 11 linhas, iguais às 11 da tabela.
+
+### Corrigido no cartão 15
+
+- **10A escondido no celular.** O seletor de período rolava de lado com a barra de rolagem escondida, então o 10A ficava fora da tela sem nenhuma pista. Agora os 8 botões dividem a largura (34px cada em 320px, 44px de altura).
+- **Menu escondia o topo da seção.** O header é `sticky`, e o clique em Conversor/Histórico/Dados levava o topo da seção para baixo dele. O mesmo valia para o foco do teclado (WCAG 2.4.11). Correção: `scroll-padding-top` no `html`. O roteiro confere que a seção fica 16px abaixo do header.
+- **Ordem cortada no celular.** O botão "Filtros" ocupava metade da barra, e o `select` mostrava "Cotação (meno". Agora o botão tem a largura do texto e o `select` fica com o resto. Em 390px cabe "Data (mais recente)". Em 320px o texto mais longo ainda termina em reticências.
 
 ## Bugs encontrados pelos testes
 

@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test \"src/**/*.test.js\"",
+    "test:scenarios": "node scripts/validate-scenarios.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
