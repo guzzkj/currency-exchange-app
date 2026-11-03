@@ -33,6 +33,41 @@
   color: var(--color-ink-muted);
 }
 
+.skeleton {
+  composes: panel from '../../styles/shared.module.css';
+  overflow: hidden;
+}
+
+.skeletonHead {
+  height: 44px;
+  background: var(--color-surface-sunken);
+}
+
+.skeletonRow {
+  composes: pulse from '../../styles/shared.module.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+
+.skeletonDate,
+.skeletonRate {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--color-surface-sunken);
+}
+
+.skeletonDate {
+  width: 96px;
+}
+
+.skeletonRate {
+  width: 64px;
+}
+
 @media (max-width: 639px) {
   .section {
     padding-bottom: var(--space-6);

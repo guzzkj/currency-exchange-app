@@ -1,0 +1,33 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-paper);
+  text-align: center;
+}
+
+.mascot {
+  width: var(--mascot-size-lg);
+  height: auto;
+}
+
+.text {
+  font-size: var(--text-lg);
+  color: var(--color-ink-muted);
+}
+
+.errorText {
+  max-width: 360px;
+  font-size: var(--text-lg);
+  text-wrap: pretty;
+}
+
+.retry {
+  composes: buttonPrimary from '../../styles/shared.module.css';
+}

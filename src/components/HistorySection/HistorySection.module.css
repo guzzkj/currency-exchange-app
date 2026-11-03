@@ -30,6 +30,23 @@
   font-weight: 600;
 }
 
+.skeleton {
+  composes: pulse from '../../styles/shared.module.css';
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 320px;
+}
+
+.skeleton svg {
+  width: 100%;
+  height: 70%;
+}
+
+.skeleton path {
+  fill: var(--color-surface-sunken);
+}
+
 .up {
   color: var(--color-up);
 }
@@ -41,5 +58,9 @@
 @media (max-width: 639px) {
   .section {
     padding-bottom: var(--space-8);
+  }
+
+  .skeleton {
+    height: 240px;
   }
 }

@@ -1,7 +1,7 @@
 import styles from './ConversionResult.module.css'
 import { formatMoney } from '../../utils/format'
 
-function ConversionResult({ value, currency }) {
+function ConversionResult({ value, currency, loading = false }) {
   // Invalid amount → "—" instead of a number.
   const formattedValue = value === null ? '—' : formatMoney(value)
 
@@ -9,9 +9,14 @@ function ConversionResult({ value, currency }) {
     <>
       <span className={styles.label}>Resultado</span>
       <div className={styles.box} aria-live="polite">
-        <output className={styles.value}>
-          {formattedValue} <span className={styles.code}>{currency}</span>
-        </output>
+        {/* While the rate loads, a placeholder keeps the layout from jumping. */}
+        {loading ? (
+          <span className={styles.skeleton} aria-label="Carregando cotação" />
+        ) : (
+          <output className={styles.value}>
+            {formattedValue} <span className={styles.code}>{currency}</span>
+          </output>
+        )}
       </div>
     </>
   )

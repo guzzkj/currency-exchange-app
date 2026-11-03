@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, RotateCcw } from 'lucide-react'
 import styles from './Converter.module.css'
 import AmountInput from '../AmountInput/AmountInput'
 import CurrencySelect from '../CurrencySelect/CurrencySelect'
@@ -10,7 +10,18 @@ import { DEFAULT_AMOUNT } from '../../constants/defaults'
 import { parseAmount } from '../../utils/amount'
 import { convert } from '../../utils/conversion'
 
-function Converter({ base, quote, currencies, rate, rateDate, onBaseChange, onQuoteChange, onSwap }) {
+function Converter({
+  base,
+  quote,
+  currencies,
+  rate,
+  rateDate,
+  rateStatus,
+  onRetryRate,
+  onBaseChange,
+  onQuoteChange,
+  onSwap,
+}) {
   // Only the converter uses the amount, so the state stays here.
   const [amountText, setAmountText] = useState(String(DEFAULT_AMOUNT))
 
@@ -56,7 +67,12 @@ function Converter({ base, quote, currencies, rate, rateDate, onBaseChange, onQu
               />
             </div>
             <div className={styles.result}>
-              <ConversionResult value={converted} currency={quote} />
+              {/* Skeleton only when there is a valid amount to convert. */}
+              <ConversionResult
+                value={converted}
+                currency={quote}
+                loading={rateStatus === 'loading' && error === null}
+              />
             </div>
           </div>
 
@@ -67,10 +83,22 @@ function Converter({ base, quote, currencies, rate, rateDate, onBaseChange, onQu
             </p>
           )}
 
+          {rateStatus === 'error' && (
+            <div role="alert" className={styles.apiError}>
+              <span className={styles.apiErrorText}>
+                <AlertCircle size={18} strokeWidth={1.75} aria-hidden="true" />
+                Não consegui atualizar a cotação.
+              </span>
+              <button type="button" className={styles.retry} onClick={onRetryRate}>
+                <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
+                Tentar de novo
+              </button>
+            </div>
+          )}
+
           <div className={styles.divider} />
 
-          {/* Shown once the API answers (loading state in card 10). */}
-          {rate && <RateInfo base={base} quote={quote} rate={rate} date={rateDate} />}
+          {rateStatus === 'success' && <RateInfo base={base} quote={quote} rate={rate} date={rateDate} />}
         </div>
       </div>
     </section>

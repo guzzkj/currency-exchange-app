@@ -63,6 +63,42 @@ Os dados continuam fictícios: `getMockRate(base, quote)` calcula a taxa cruzada
 
 Ficam para depois: `LanguageSelect`, `ThemeToggle`, `OnboardingCard`, `KpiCard`, `OfflineBanner` e `Toast`, que são opcionais (`PLANEJAMENTO.md` §4.1), e `Loading`, `ErrorMessage`, `EmptyState` e `Mascot`, que dependem de estado real (cartões 10 e 15).
 
+### Situação atual (cartões 9 e 10)
+
+Os dados vêm da API Frankfurter (`services/frankfurterApi.js`). O `App` tem um `useEffect` por consulta, e cada um roda só quando as suas dependências mudam:
+
+| Consulta | Dependências | Não roda quando muda |
+|---|---|---|
+| `getCurrencies()` | tentativa (`retry`) | par, período, valor |
+| `getLatestRate(base, quote)` | `base`, `quote`, tentativa | período, valor |
+| `getHistory(base, quote, period)` | `base`, `quote`, `period`, tentativa | valor |
+
+O valor digitado nunca dispara requisição: a conversão é só `valor × taxa` (RN01).
+
+**Status derivado, sem estado extra.** Cada resultado guarda a `key` da requisição que respondeu (ex.: `EUR/BRL/30D#0`). Se a key atual ainda não tem resultado, o status é `'loading'`. Depois é `'error'` ou `'success'`.
+
+**Cancelamento.** O cleanup do efeito chama `controller.abort()`. Se o usuário troca de par antes da resposta chegar, a requisição antiga é cancelada e não sobrescreve a nova. O `AbortError` é ignorado, porque não é um erro para o usuário.
+
+**Tentar de novo.** Soma 1 na tentativa daquela consulta. A key muda e o efeito roda de novo.
+
+| Componente novo | Responsabilidade | Props |
+|---|---|---|
+| `Splash` | Tela inteira enquanto a lista de moedas carrega. Se der erro, mostra o Ouri e "Tentar de novo" | `status`, `onRetry` |
+| `StatusMessage` | Mensagem de vazio ou erro de uma seção, com Ouri e botão opcionais | `message`, `mascot`, `actionLabel`, `onAction`, `actionVariant`, `framed` |
+
+Estados por seção (iguais ao `LastroApp.dc.html`):
+
+| Seção | Carregando | Erro | Vazio |
+|---|---|---|---|
+| Tela inicial | Ouri "carregando" + "Buscando cotações…" | Ouri "erro" + "Tentar de novo" | — |
+| Conversor | skeleton no resultado | alerta vermelho "Não consegui atualizar a cotação." + "Tentar de novo"; resultado "—" | — |
+| Histórico | skeleton com a forma de uma curva | Ouri "erro" + "Tentar de novo" | Ouri "vazio" + "Não há cotações publicadas neste período." |
+| Dados | tabela skeleton com 5 linhas | mensagem sem Ouri | mensagem sem Ouri |
+
+**Regra do mascote:** no máximo um Ouri por tela. O histórico e a tabela vêm da mesma requisição, então o Ouri aparece só no histórico.
+
+Os seletores de período e de moeda continuam funcionando durante o carregamento e os erros.
+
 ## 1. Árvore de componentes
 
 ```
