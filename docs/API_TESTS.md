@@ -203,4 +203,28 @@ npx newman run docs/postman/currency-exchange.postman_collection.json
 
 ### Evidências
 
-Prints da execução no Postman: `docs/postman/img/` (adicionar depois de rodar a Collection).
+A tabela acima é da execução pelo Newman. No **Collection Runner** do Postman (03/11/2026): 16 requisições, **38 testes, 0 erros**, 11,6 s no total e 685 ms de tempo médio de resposta.
+
+**Collection** (4 pastas, 16 requisições):
+
+![Collection no Postman](postman/img/01-collection.png)
+
+**Collection Runner:** todas as requisições passaram.
+
+![Resultado do Collection Runner](postman/img/06-runner.png)
+
+**`GET /currencies`:** `200 OK` e a lista com `iso_code`, `name`, `start_date` e `end_date` (seção 2.1).
+
+![GET /currencies](postman/img/02-currencies.png)
+
+**`GET /rate/EUR/BRL?providers=ECB`:** `200 OK`, com a data efetiva e a cotação usada no app (seção 2.2).
+
+![GET /rate/EUR/BRL](postman/img/03-rate-eur-brl.png)
+
+**`GET /rates` (maio/2024, BCE):** a lista começa em 30/04, o último dia útil antes do `from` (seção 3). O app descarta esse registro.
+
+![GET /rates maio/2024](postman/img/04-history.png)
+
+**Moeda inválida:** `422` com `{ status, message }`, que o app transforma em `ApiError` (seção 4).
+
+![Erro 422 moeda inválida](postman/img/05-error.png)

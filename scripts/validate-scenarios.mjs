@@ -456,9 +456,13 @@ await sleep(600)
 await reinject()
 check('Splash "Buscando cotações…" enquanto a lista de moedas carrega', await ev(`document.body.textContent.includes('Buscando cotações')`))
 evidence(await shot('13-loading-splash.png'))
-// The rate and history hooks already asked during the splash: only the currency list goes on.
-const currenciesRequest = heldRequests.splice(heldRequests.findIndex((held) => held.url.includes('/currencies')), 1)[0]
-await send('Fetch.continueRequest', { requestId: currenciesRequest.requestId })
+// The rate and history hooks already asked during the splash: only the currency list goes on
+// (every copy of it: in dev mode StrictMode runs the effect twice).
+interceptor = (url) => (url.includes('/currencies') ? 'pass' : 'hold')
+for (const held of heldRequests.filter((request) => request.url.includes('/currencies'))) {
+  heldRequests.splice(heldRequests.indexOf(held), 1)
+  await send('Fetch.continueRequest', { requestId: held.requestId })
+}
 await waitFor(`!!document.querySelector('#dados')`)
 await reinject()
 await sleep(300)

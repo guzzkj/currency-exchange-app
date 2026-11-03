@@ -289,7 +289,7 @@ Os testes trocam o `fetch` por um falso, que devolve a resposta escolhida e guar
 
 ## Testes finais na tela (cartão 15)
 
-Os 15 testes mínimos da seção 9 do briefing rodam num **Chrome de verdade**, com a **API real**, pelo roteiro `scripts/validate-scenarios.mjs`. Ele controla o Chrome pelo DevTools Protocol (sem dependência nova). Falha, demora e período vazio da API são **simulados** interceptando só aquelas requisições.
+Os testes mínimos da seção 9 do briefing rodam num **Chrome de verdade**, com a **API real**, pelo roteiro `scripts/validate-scenarios.mjs`. Ele controla o Chrome pelo DevTools Protocol (sem dependência nova). Falha, demora e período vazio da API são **simulados** interceptando só aquelas requisições.
 
 ```bash
 npm run build
@@ -320,7 +320,7 @@ Cada verificação aparece como ✅ ou ❌ no terminal, e o comando sai com erro
 | 13 | Estados de loading | Segurar as respostas da API (simulado) | Splash "Buscando cotações…", depois skeletons e `aria-busy` no resultado, histórico e tabela. Exportar desabilitado | ✅ 5/5 | [13-loading-splash](img/tests/13-loading-splash.png) · [13-loading-skeletons](img/tests/13-loading-skeletons.png) |
 | 14 | Responsividade em desktop e celular | Abrir em 1280, 1024, 768, 390 e 320px. Clicar nos links do menu | Sem rolagem horizontal, os 8 períodos visíveis, alvos ≥ 24px, tabela no desktop e cards no mobile, sheet com foco no X, menu não esconde a seção | ✅ 24/24 | [14-desktop-1280](img/tests/14-desktop-1280.png) · [14-mobile-390-conversor](img/tests/14-mobile-390-conversor.png) · [14-mobile-390-historico](img/tests/14-mobile-390-historico.png) · [14-mobile-390-dados](img/tests/14-mobile-390-dados.png) · [14-mobile-390-filtros](img/tests/14-mobile-390-filtros.png) · [14-mobile-320](img/tests/14-mobile-320.png) |
 | 15 | Console sem erros | Todos os cenários acima | Nenhum erro ou aviso no console | ✅ 1/1 | — |
-| — | Instalação a partir do README | `npm install` + `npm run dev` seguindo só o README | App abre | Cartão 16 | — |
+| 16 | Instalação a partir do README | `git clone` do GitHub numa pasta vazia, depois `npm install` e `npm run dev`, seguindo só o README | Instala sem erro e o app abre em `localhost:5173` | ✅ Instalou, 72/72 em `npm test`, build ok. O roteiro rodou contra o `npm run dev` do clone: 96/96 | — |
 
 Números reais desta rodada: 100 EUR = 614,11 BRL (cotação 6,1411). Períodos: 7D 6 · 15D 12 · 30D 22 · 3M 67 · 6M 132 · 1A 256 · 5A 1281 · 10A 2559 registros. CSV filtrado: 11 linhas, iguais às 11 da tabela.
 
