@@ -12,7 +12,7 @@ A interface estática foi dividida em componentes, cada um em `src/components/No
 |---|---|
 | Estrutura | `Header`, `Hero`, `Footer` (o `App` só monta a página) |
 | Conversor | `Converter`, `AmountInput`, `CurrencySelect` (usado 2×), `SwapButton`, `ConversionResult`, `RateInfo` |
-| Histórico | `HistorySection`, `PeriodSelector`, `HistoryChart` (SVG estático até o cartão 12) |
+| Histórico | `HistorySection`, `PeriodSelector`, `HistoryChart` (Recharts a partir do cartão 12) |
 | Dados | `DataSection`, `TableFilters`, `DataTable` (inclui a paginação), `ExportCsvButton` |
 
 **Simplificação em relação ao mapa inicial:** `RateDateBadge`, `PeriodSummary` e `ResultCount` eram pequenos demais para virar componentes separados. O selo da data ficou dentro de `RateInfo`, o resumo do período dentro de `HistorySection` e a contagem de registros dentro de `DataSection`.
@@ -120,6 +120,26 @@ Como o `useApiRequest` funciona:
 
 O `App` ficou só com o estado da interface (`base`, `quote`, `period`) e a ligação entre as seções.
 
+### Situação atual (cartão 12)
+
+O SVG feito à mão do `HistoryChart` foi trocado pelo **Recharts** (`AreaChart`), seguindo o gráfico do design (`LastroApp`, `buildChart`):
+
+| Item | Como ficou |
+|---|---|
+| Linha e área | `Area` linear, linha `secondary` de 2px, área com 8% de opacidade, sem animação |
+| Eixo Y | 4 marcas da mínima à máxima, 20% de folga em cima e embaixo. Casas decimais conforme a variação (`utils/chart.js`) |
+| Eixo X | 5 datas (3 no mobile), a primeira alinhada à esquerda e a última à direita. "23 de out" nos períodos curtos e "out de 25" acima de 140 registros |
+| Grade | Só as linhas horizontais das marcas do eixo Y (`syncWithTicks`) |
+| Mínima e máxima | `ReferenceDot` com "mín. 5,58" em vermelho embaixo e "máx. 6,25" em verde em cima. Perto das bordas o texto alinha para dentro |
+| Último ponto | A "moedinha" (`gold-400` com borda `gold-700`) |
+| Tooltip | Linha tracejada e card com a data por extenso e a cotação com 4 casas + código da moeda. Funciona com mouse, toque e teclado (setas, `accessibilityLayer` do Recharts) |
+| Tamanho | 320px de altura no desktop e 240px abaixo de 640px (`hooks/useMediaQuery.js`, com `useSyncExternalStore`) |
+| Acessibilidade | `figure` com `aria-label` descrevendo período, primeira e última cotação, mínima e máxima |
+
+O gráfico muda quando o par ou o período muda, porque os `records` vêm do `useHistory`. Isso foi conferido no navegador com 30D, 10A e o par invertido.
+
+**Carregamento sob demanda.** O Recharts era a maior parte do JS (641 kB em um arquivo só). O `HistoryChart` agora é carregado com `React.lazy` + `Suspense`, e o skeleton do histórico ocupa o lugar enquanto o arquivo chega. O JS inicial caiu para 261 kB (83 kB gzip), e o gráfico vem num arquivo separado de 380 kB.
+
 ## 1. Árvore de componentes
 
 ```
@@ -226,12 +246,14 @@ Estados reutilizados pelas seções: Loading (Skeleton) · ErrorMessage · Empty
 | `hooks/useCurrencies.js` | Lista de moedas | `App` → `Splash`, `CurrencySelect` |
 | `hooks/useLatestRate.js` | Taxa e data efetiva do par | `App` → `Converter`, `Hero` |
 | `hooks/useHistory.js` | Registros do período | `App` → `HistorySection`, `DataSection` |
+| `hooks/useMediaQuery.js` | `true` enquanto a media query vale (tamanho do gráfico no mobile) | `HistoryChart` |
 | `utils/amount.js` | Validação do valor (RN02) | `Converter` |
 | `utils/conversion.js` | `convert`, `invertRate`, `selectCurrency`, `swapPair` | `Converter`, `RateInfo`, `App` |
 | `utils/dates.js` | `getPeriodRange` e datas em ISO | `services` |
 | `utils/records.js` | Filtro, validação dos filtros, ordenação, paginação e resumo | `DataTable`, seções |
 | `utils/format.js` | `formatRate`, `formatMoney`, `formatDate`… em pt-BR | vários |
 | `utils/csv.js` | `toCsv`, `getCsvFileName` | `ExportCsvButton` (cartão 14) |
+| `utils/chart.js` | Mínima/máxima, eixo Y (domínio, marcas, casas), datas do eixo X, alinhamento dos rótulos | `HistoryChart` |
 | `constants/` | Os 8 períodos, o par padrão (EUR → BRL) e o tamanho da página | vários |
 
 Os testes de tudo isso estão em `docs/FUNCTION_TESTS.md`.

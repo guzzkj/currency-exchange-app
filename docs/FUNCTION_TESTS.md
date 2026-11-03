@@ -16,9 +16,9 @@ Usa o **test runner nativo do Node** (`node:test` + `node:assert`), sem nenhuma 
 
 | Arquivos | Testes | Passaram | Falharam |
 |---|---|---|---|
-| 8 | 59 | 59 | 0 |
+| 9 | 68 | 68 | 0 |
 
-> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`.
+> Cartão 8: 47 testes (6 arquivos de `utils/`). Cartão 9: +8 testes do `services/frankfurterApi.js`. Cartão 11: +4 testes de `hooks/useApiRequest.js`. Cartão 12: +6 testes de `utils/chart.js` e +3 de `utils/format.js`.
 
 Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14, e `TZ=America/Los_Angeles`, UTC−8), e os 47 testes de `utils/` passaram. Isso garante que nenhuma data "pula" um dia por causa do fuso.
 
@@ -39,6 +39,7 @@ Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14,
 | `format.js` | `formatRate`, `formatMoney` | 4 casas para cotação, 2 para dinheiro, pt-BR | RN12 |
 | | `formatDate`, `formatShortDate`, `formatWeekday` | Datas em pt-BR sem erro de fuso | RN06 |
 | | `formatChange(percent)` | `+1,23% ▲` / `−0,45% ▼` | — |
+| | `formatAxisDate`, `formatLongDate`, `formatCompactRate` | Datas do eixo e do tooltip, rótulos de mín./máx. do gráfico | RN12 |
 | `records.js` | `filterRecords(records, filters)` | Filtra por data e cotação; campo vazio não filtra | RN10 |
 | | `validateFilters(filters)` | Início ≤ fim, mín. ≤ máx., número válido | RN10 |
 | | `sortRecords(records, sort)` | Ordena por data ou cotação, sem alterar o original | RN09 |
@@ -46,6 +47,10 @@ Também rodei com o fuso do computador trocado (`TZ=Pacific/Kiritimati`, UTC+14,
 | | `getRateStats(records)` | Primeira, última, mín., máx. e variação do período | — |
 | `csv.js` | `toCsv(records)` | CSV com BOM, `;`, `data;origem;destino;cotacao` | RN13 |
 | | `getCsvFileName(base, quote, records)` | `cotacoes_EUR-BRL_{início}_{fim}.csv`, ou `null` sem registros | RN14, RN15 |
+| `chart.js` | `getExtremes(records)` | Mínima e máxima com a posição | — |
+| | `getYAxis(records)` | Domínio com 20% de folga, 4 marcas, casas decimais | — |
+| | `getXTicks(records, count)` | Datas do eixo X, sempre com a primeira e a última | — |
+| | `getEdgeAnchor(index, total)` | Alinhamento do rótulo perto das bordas | — |
 
 ## Casos testados
 
@@ -133,6 +138,10 @@ Legenda: ✅ passou.
 | `formatDate('2026-10-23')` | `23/10/2026` | ✅ |
 | `formatShortDate('2026-10-23')` | `23/10` | ✅ |
 | `formatWeekday('2026-10-23')` | `sex.` | ✅ |
+| `formatAxisDate('2026-10-23', false)` | `23 de out` | ✅ |
+| `formatAxisDate('2026-10-23', true)` | `out de 26` | ✅ |
+| `formatLongDate('2026-10-30')` | `Sexta-feira, 30 de outubro de 2026` | ✅ |
+| `formatCompactRate(6.0993)` / `(0.16394)` | `6,10` / `0,1639` | ✅ |
 
 ### Tabela: filtros, ordenação e paginação (RN09, RN10)
 
@@ -217,6 +226,30 @@ Os testes trocam o `fetch` por um falso, que devolve a resposta escolhida e guar
 
 **No navegador** (Chrome headless com `fetch` interceptado): o histórico falha (500), aparece "Tentar de novo", o clique busca **só** `/rates` de novo, e o gráfico com 21 registros aparece. A cotação e as moedas não foram buscadas outra vez.
 
+### Gráfico — `utils/chart.js` (cartão 12)
+
+| Cenário | Esperado | Obtido |
+|---|---|---|
+| `getExtremes` com mínimo repetido | primeira ocorrência (posição 1) | ✅ |
+| `getAxisDecimals(0.01 / 0.3 / 1 / 20 / 500)` | 4 / 3 / 2 / 1 / 0 casas | ✅ |
+| `getYAxis` de 6,0 a 6,3 | domínio 5,94–6,36, marcas 6,0 … 6,3, 3 casas | ✅ |
+| `getYAxis` com taxa constante | domínio não vazio e uma marca só | ✅ |
+| `getXTicks(5 registros, 3)` | primeira, do meio e última data | ✅ |
+| `getXTicks(2 registros, 5)` | sem datas repetidas | ✅ |
+| `getEdgeAnchor` no início / meio / fim | `start` / `middle` / `end` | ✅ |
+
+**No navegador** (Chrome headless via DevTools Protocol, API real):
+
+| Cenário | Resultado |
+|---|---|
+| 30D no desktop (1280px) | Gráfico 1150×320, rótulos "mín. 5,58" e "máx. 6,25", moedinha no último ponto |
+| Mouse a 60% da largura | Tooltip "Quarta-feira, 21 de outubro de 2026 · 5,6432 BRL" e linha tracejada |
+| Mobile (390px) | Gráfico 332×240, 3 datas no eixo X |
+| Período 10A | 2.558 pontos, eixo X "nov de 16 … nov de 26" |
+| Teclado (foco + seta →) | Tooltip do primeiro dia (04/11/2016) |
+| Inverter o par | Gráfico redesenhado como BRL/EUR (0,1438 a 0,3086) |
+| Console | Nenhum erro ou aviso |
+
 ## Bugs encontrados pelos testes
 
 `isValidIsoDate('2024-13-01')` **lançava uma exceção** (`RangeError: Invalid time value`) em vez de devolver `false`. O mês 13 gera uma data inválida, e o `toISOString()` falha com ela.
@@ -235,7 +268,7 @@ Correção: checar `Number.isNaN(date.getTime())` antes de comparar. Sem esse te
 | `RateInfo` | `invertRate`, `formatRate`, `formatDate`, `formatWeekday` |
 | `Hero` | `formatDate` |
 | `HistorySection` | `getRateStats`, `formatChange`, `formatRate` |
-| `HistoryChart` | `formatNumber`, `formatRate`, `formatShortDate` |
+| `HistoryChart` | `getYAxis`, `getXTicks`, `getExtremes`, `getEdgeAnchor`, `formatNumber`, `formatRate`, `formatDate`, `formatAxisDate`, `formatLongDate`, `formatCompactRate` |
 | `DataSection` | `getRateStats` |
 | `DataTable` | `sortRecords`, `paginate`, `formatDate`, `formatRate` |
 | `TableFilters` | `formatRate` |

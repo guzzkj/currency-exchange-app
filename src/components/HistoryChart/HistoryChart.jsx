@@ -1,68 +1,170 @@
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceDot,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import styles from './HistoryChart.module.css'
-import { formatNumber, formatRate, formatShortDate } from '../../utils/format'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { getEdgeAnchor, getExtremes, getXTicks, getYAxis, LONG_RANGE_RECORDS } from '../../utils/chart'
+import {
+  formatAxisDate,
+  formatCompactRate,
+  formatDate,
+  formatLongDate,
+  formatNumber,
+  formatRate,
+} from '../../utils/format'
 
-// SVG chart drawn from the records. The charting library replaces it in card 12.
-const WIDTH = 900
-const HEIGHT = 320
-const PADDING = { top: 16, right: 16, bottom: 32, left: 56 }
-const Y_TICKS = 4
-const X_TICKS = 5
+// Sizes from the design (desktop / mobile below 640px).
+const SIZES = {
+  desktop: { height: 320, margin: { top: 28, right: 28, bottom: 0, left: 0 }, yAxisWidth: 56, xTicks: 5 },
+  mobile: { height: 240, margin: { top: 28, right: 14, bottom: 0, left: 0 }, yAxisWidth: 44, xTicks: 3 },
+}
 
-function HistoryChart({ records, pair }) {
-  const rates = records.map((record) => record.rate)
-  const minRate = Math.min(...rates)
-  const maxRate = Math.max(...rates)
-  const margin = (maxRate - minRate) * 0.05 || 0.01
-  const low = minRate - margin
-  const high = maxRate + margin
+const AXIS_TICK = { fontSize: 12, fill: 'var(--chart-axis-text)' }
 
-  const plotWidth = WIDTH - PADDING.left - PADDING.right
-  const plotHeight = HEIGHT - PADDING.top - PADDING.bottom
-  const baseline = PADDING.top + plotHeight
-  const lastIndex = records.length - 1
+// Line chart of the period (Recharts). Updates when `records` changes,
+// that is, when the pair or the period changes (useHistory).
+function HistoryChart({ records, pair, quote }) {
+  const isMobile = useMediaQuery('(max-width: 639px)')
+  const size = isMobile ? SIZES.mobile : SIZES.desktop
 
-  const x = (index) => PADDING.left + (lastIndex === 0 ? plotWidth / 2 : (plotWidth * index) / lastIndex)
-  const y = (rate) => PADDING.top + plotHeight * (1 - (rate - low) / (high - low))
-
-  const points = records.map((record, index) => `${x(index).toFixed(1)},${y(record.rate).toFixed(1)}`)
-  const areaPath = `M${x(0)},${baseline} L${points.join(' L')} L${x(lastIndex)},${baseline} Z`
-
-  const yTicks = Array.from({ length: Y_TICKS }, (_, i) => low + ((high - low) * i) / (Y_TICKS - 1))
-  const xTickIndexes = [...new Set(Array.from({ length: X_TICKS }, (_, i) => Math.round((lastIndex * i) / (X_TICKS - 1))))]
+  const yAxis = getYAxis(records)
+  const xTicks = getXTicks(records, size.xTicks)
+  const longRange = records.length > LONG_RANGE_RECORDS
+  const { minIndex, maxIndex } = getExtremes(records)
+  const minRecord = records[minIndex]
+  const maxRecord = records[maxIndex]
+  const lastRecord = records[records.length - 1]
+  const hasRange = minRecord.rate !== maxRecord.rate
 
   const firstRecord = records[0]
-  const lastRecord = records[lastIndex]
-  const description = `Cotação ${pair} de ${formatShortDate(firstRecord.date)} a ${formatShortDate(lastRecord.date)}, de ${formatRate(firstRecord.rate)} a ${formatRate(lastRecord.rate)}`
+  const description = `Gráfico da cotação ${pair} de ${formatDate(firstRecord.date)} a ${formatDate(lastRecord.date)}: de ${formatRate(firstRecord.rate)} a ${formatRate(lastRecord.rate)}, mínima ${formatRate(minRecord.rate)} e máxima ${formatRate(maxRecord.rate)}. Use as setas do teclado para ver cada dia.`
 
   return (
     <div className={styles.panel}>
-      <svg className={styles.chart} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={description}>
-        <g className={styles.grid}>
-          {yTicks.map((tick) => (
-            <line key={tick} x1={PADDING.left} x2={WIDTH - PADDING.right} y1={y(tick)} y2={y(tick)} />
-          ))}
-        </g>
-        <g className={styles.axis}>
-          {yTicks.map((tick) => (
-            <text key={tick} x={PADDING.left - 10} y={y(tick) + 4} textAnchor="end">
-              {formatNumber(tick, 2)}
-            </text>
-          ))}
-          {xTickIndexes.map((index, i) => (
-            <text
-              key={records[index].date}
-              x={x(index)}
-              y={HEIGHT - 8}
-              textAnchor={i === 0 ? 'start' : i === xTickIndexes.length - 1 ? 'end' : 'middle'}
-            >
-              {formatShortDate(records[index].date)}
-            </text>
-          ))}
-        </g>
-        <path className={styles.area} d={areaPath} />
-        <polyline className={styles.line} points={points.join(' ')} />
-        <circle className={styles.coin} cx={x(lastIndex)} cy={y(lastRecord.rate)} r="4" />
-      </svg>
+      <figure className={styles.chart} aria-label={description}>
+        <ResponsiveContainer width="100%" height={size.height}>
+          <AreaChart data={records} margin={size.margin}>
+            <CartesianGrid vertical={false} syncWithTicks stroke="var(--color-line)" />
+            <YAxis
+              dataKey="rate"
+              domain={yAxis.domain}
+              ticks={yAxis.ticks}
+              tickFormatter={(value) => formatNumber(value, yAxis.decimals)}
+              width={size.yAxisWidth}
+              tick={AXIS_TICK}
+              tickLine={false}
+              axisLine={false}
+            />
+            <XAxis
+              dataKey="date"
+              ticks={xTicks}
+              interval={0}
+              height={30}
+              tick={<AxisDateTick ticks={xTicks} longRange={longRange} />}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              content={<ChartTooltip quote={quote} />}
+              cursor={{ stroke: 'var(--chart-axis-text)', strokeWidth: 1, strokeDasharray: '3 3' }}
+              isAnimationActive={false}
+            />
+            <Area
+              type="linear"
+              dataKey="rate"
+              stroke="var(--chart-line)"
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              fill="var(--chart-line)"
+              fillOpacity={0.08}
+              dot={false}
+              activeDot={{ r: 5, fill: 'var(--chart-line)', stroke: 'var(--color-surface)', strokeWidth: 2 }}
+              isAnimationActive={false}
+            />
+            {hasRange && (
+              <ReferenceDot
+                x={minRecord.date}
+                y={minRecord.rate}
+                r={3}
+                fill="var(--chart-min)"
+                stroke="none"
+                label={<ExtremeLabel kind="min" rate={minRecord.rate} anchor={getEdgeAnchor(minIndex, records.length)} />}
+              />
+            )}
+            {hasRange && (
+              <ReferenceDot
+                x={maxRecord.date}
+                y={maxRecord.rate}
+                r={3}
+                fill="var(--chart-max)"
+                stroke="none"
+                label={<ExtremeLabel kind="max" rate={maxRecord.rate} anchor={getEdgeAnchor(maxIndex, records.length)} />}
+              />
+            )}
+            {/* "Moedinha": the most recent rate (brand detail, no face). */}
+            <ReferenceDot
+              x={lastRecord.date}
+              y={lastRecord.rate}
+              r={4}
+              fill="var(--chart-marker-today)"
+              stroke="var(--chart-marker-today-stroke)"
+              strokeWidth={2}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </figure>
+    </div>
+  )
+}
+
+// X axis label: the first one aligned left, the last one right (inside the chart).
+function AxisDateTick({ x, y, payload, ticks, longRange }) {
+  const index = ticks.indexOf(payload.value)
+  const anchor = index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'
+  return (
+    <text x={x} y={y + 14} textAnchor={anchor} {...AXIS_TICK}>
+      {formatAxisDate(payload.value, longRange)}
+    </text>
+  )
+}
+
+// "mín. 6,03" below the lowest point, "máx. 6,12" above the highest one.
+function ExtremeLabel({ viewBox, kind, rate, anchor }) {
+  const isMin = kind === 'min'
+  const x = viewBox.x + viewBox.width / 2
+  const y = isMin ? viewBox.y + viewBox.height + 15 : viewBox.y - 7
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor={anchor}
+      fontSize={12}
+      fontWeight={500}
+      fill={isMin ? 'var(--chart-min)' : 'var(--chart-max)'}
+    >
+      {isMin ? 'mín.' : 'máx.'} {formatCompactRate(rate)}
+    </text>
+  )
+}
+
+// Hover/touch/keyboard card: full date and the rate with 4 decimals (RN12).
+function ChartTooltip({ active, payload, quote }) {
+  if (!active || !payload?.length) return null
+  const record = payload[0].payload
+  return (
+    <div className={styles.tooltip}>
+      <div className={styles.tooltipDate}>{formatLongDate(record.date)}</div>
+      <div className={styles.tooltipRate}>
+        {formatRate(record.rate)} <span className={styles.tooltipCode}>{quote}</span>
+      </div>
     </div>
   )
 }

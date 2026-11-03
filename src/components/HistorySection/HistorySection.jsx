@@ -1,9 +1,13 @@
+import { lazy, Suspense } from 'react'
 import styles from './HistorySection.module.css'
 import PeriodSelector from '../PeriodSelector/PeriodSelector'
-import HistoryChart from '../HistoryChart/HistoryChart'
 import StatusMessage from '../StatusMessage/StatusMessage'
 import { formatChange, formatRate } from '../../utils/format'
 import { getRateStats } from '../../utils/records'
+
+// Recharts is most of the bundle: the chart loads in its own file, on demand,
+// while the skeleton holds its place.
+const HistoryChart = lazy(() => import('../HistoryChart/HistoryChart'))
 
 // status: 'loading' | 'error' | 'success'. Success with no records = empty period.
 function HistorySection({ base, quote, period, periods, records, status, onRetry, onPeriodChange }) {
@@ -25,13 +29,7 @@ function HistorySection({ base, quote, period, periods, records, status, onRetry
           <PeriodSelector options={periods} value={period} onChange={onPeriodChange} />
         </div>
 
-        {status === 'loading' && (
-          <div className={styles.skeleton} aria-hidden="true">
-            <svg viewBox="0 0 1000 300" preserveAspectRatio="none">
-              <path d="M0 220 C120 200 180 240 300 190 S520 120 640 150 S860 80 1000 100 L1000 300 L0 300 Z" />
-            </svg>
-          </div>
-        )}
+        {status === 'loading' && <ChartSkeleton />}
 
         {status === 'error' && (
           <StatusMessage
@@ -49,11 +47,24 @@ function HistorySection({ base, quote, period, periods, records, status, onRetry
         {hasData && (
           <>
             <PeriodSummary pair={pair} records={records} periodLabel={selectedPeriod.longLabel} />
-            <HistoryChart records={records} pair={pair} />
+            <Suspense fallback={<ChartSkeleton />}>
+              <HistoryChart records={records} pair={pair} quote={quote} />
+            </Suspense>
           </>
         )}
       </div>
     </section>
+  )
+}
+
+// Placeholder curve while the records (or the chart code) are loading.
+function ChartSkeleton() {
+  return (
+    <div className={styles.skeleton} aria-hidden="true">
+      <svg viewBox="0 0 1000 300" preserveAspectRatio="none">
+        <path d="M0 220 C120 200 180 240 300 190 S520 120 640 150 S860 80 1000 100 L1000 300 L0 300 Z" />
+      </svg>
+    </div>
   )
 }
 

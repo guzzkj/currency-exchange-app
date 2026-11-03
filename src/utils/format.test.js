@@ -1,8 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  formatAxisDate,
   formatChange,
+  formatCompactRate,
   formatDate,
+  formatLongDate,
   formatMoney,
   formatNumber,
   formatRate,
@@ -43,4 +46,18 @@ test('formatDate não muda o dia por causa do fuso', () => {
 test('formatWeekday devolve o dia da semana abreviado', () => {
   assert.equal(formatWeekday('2026-10-23'), 'sex.')
   assert.equal(formatWeekday('2026-10-26'), 'seg.')
+})
+
+test('formatAxisDate: dia/mês nos períodos curtos e mês/ano nos longos, sem ponto', () => {
+  assert.equal(formatAxisDate('2026-10-23', false), '23 de out')
+  assert.equal(formatAxisDate('2026-10-23', true), 'out de 26')
+})
+
+test('formatLongDate: data por extenso com inicial maiúscula (tooltip)', () => {
+  assert.equal(formatLongDate('2026-10-30'), 'Sexta-feira, 30 de outubro de 2026')
+})
+
+test('formatCompactRate: 2 casas, ou 4 abaixo de 1', () => {
+  assert.equal(formatCompactRate(6.0993), '6,10')
+  assert.equal(formatCompactRate(0.16394), '0,1639')
 })
