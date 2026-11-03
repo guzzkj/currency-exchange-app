@@ -2,7 +2,24 @@
 
 > **Versão inicial (cartão 2)**, feita a partir do Figma (`docs/FIGMA.md`, página `03 · Componentes & Tokens`) e de `branding/wireframes/wireframes.md`. Ela deve ser atualizada nos cartões 4 (componentização), 5 (props) e 6 (estado), quando o código existir.
 
-**Convenções:** JavaScript (`.jsx`), componentes funcionais, um CSS Module por componente (`Nome.module.css`) e tokens de `branding/tokens.css` como variáveis CSS globais. Ícones: Lucide React. Gráfico: Recharts.
+**Convenções:** JavaScript (`.jsx`), componentes funcionais, um CSS Module por componente (`Nome.module.css`) e tokens de `src/styles/tokens.css` (cópia de `branding/tokens.css`) como variáveis CSS globais. Padrões repetidos (container, rótulo em caixa alta, título de seção, painel) ficam em `src/styles/shared.module.css` e são reaproveitados com `composes`. Ícones: Lucide React. Gráfico: Recharts.
+
+### Situação atual (cartão 4)
+
+A interface estática foi dividida em componentes, cada um em `src/components/Nome/Nome.jsx` com seu `Nome.module.css`:
+
+| Seção | Componentes criados |
+|---|---|
+| Estrutura | `Header`, `Hero`, `Footer` (o `App` só monta a página) |
+| Conversor | `Converter`, `AmountInput`, `CurrencySelect` (usado 2×), `SwapButton`, `ConversionResult`, `RateInfo` |
+| Histórico | `HistorySection`, `PeriodSelector`, `HistoryChart` (SVG estático até o cartão 12) |
+| Dados | `DataSection`, `TableFilters`, `DataTable` (inclui a paginação), `ExportCsvButton` |
+
+**Simplificação em relação ao mapa inicial:** `RateDateBadge`, `PeriodSummary` e `ResultCount` eram pequenos demais para virar componentes separados. O selo da data ficou dentro de `RateInfo`, o resumo do período dentro de `HistorySection` e a contagem de registros dentro de `DataSection`.
+
+Os dados ainda são fictícios e ficam escritos dentro de cada componente. Só `CurrencySelect` já recebe props (`id`, `label`, `code`, `name`), porque aparece duas vezes. O fluxo de dados por props e as listas com `map` entram no cartão 5.
+
+Ficam para depois: `LanguageSelect`, `ThemeToggle`, `OnboardingCard`, `KpiCard`, `OfflineBanner` e `Toast`, que são opcionais (`PLANEJAMENTO.md` §4.1), e `Loading`, `ErrorMessage`, `EmptyState` e `Mascot`, que dependem de estado real (cartões 10 e 15).
 
 ## 1. Árvore de componentes
 
